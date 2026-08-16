@@ -31,3 +31,17 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment & Config Files ###
+src/main/resources/config/application-*.yaml
+src/main/resources/config/application-*.yml
+src/main/resources/config/application-*.properties
+src/main/resources/config/application-local.*
+src/main/resources/application-*.yaml
+src/main/resources/application-*.yml
+src/main/resources/application-*.properties
+src/main/resources/application-local.*
+*.env
+.env
+.env.*
+

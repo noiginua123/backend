@@ -1,9 +1,9 @@
 /**
  * Copyright(C) 2026 Luvina Software Company
  *
- * LoginRequest.java, 16/08/2026 thanhvinh
+ * DepartmentDTO.java, 16/08/2026 thanhvinh
  */
-package com.luvina.la.payload;
+package com.luvina.la.dto;
 
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
@@ -11,17 +11,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Payload chứa thông tin yêu cầu đăng nhập từ người dùng.
+ * Data Transfer Object (DTO) chứa thông tin phòng ban.
  *
  * @author thanhvinh
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest implements Serializable {
+public class DepartmentDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String username;
-    private String password;
+    private Long departmentId;
+    private String departmentName;
 }

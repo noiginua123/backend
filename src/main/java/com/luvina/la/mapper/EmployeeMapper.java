@@ -1,21 +1,48 @@
+/**
+ * Copyright(C) 2026 Luvina Software Company
+ *
+ * EmployeeMapper.java, 16/08/2026 thanhvinh
+ */
 package com.luvina.la.mapper;
 
 import com.luvina.la.dto.EmployeeDTO;
 import com.luvina.la.entity.Employee;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 /**
- * use:
- *  EmployeeMapper.MAPPER.toEntity(dto);
- *  EmployeeMapper.MAPPER.toList(list);
+ * Interface MapStruct thực hiện ánh xạ hai chiều giữa Employee Entity và EmployeeDTO.
+ *
+ * @author thanhvinh
  */
 @Mapper
 public interface EmployeeMapper {
-    EmployeeMapper MAPPER = Mappers.getMapper( EmployeeMapper.class );
 
-    Employee toEntity(EmployeeDTO entity);
-    Employee toDto(EmployeeDTO entity);
+    EmployeeMapper MAPPER = Mappers.getMapper(EmployeeMapper.class);
+
+    /**
+     * Chuyển đổi từ EmployeeDTO sang Employee Entity.
+     *
+     * @param dto Đối tượng DTO của nhân viên
+     * @return Đối tượng Entity của nhân viên
+     */
+    Employee toEntity(EmployeeDTO dto);
+
+    /**
+     * Chuyển đổi từ Employee Entity sang EmployeeDTO kèm theo tên phòng ban.
+     *
+     * @param entity Đối tượng Entity của nhân viên
+     * @return Đối tượng DTO của nhân viên
+     */
+    @Mapping(source = "department.departmentName", target = "departmentName")
+    EmployeeDTO toDto(Employee entity);
+
+    /**
+     * Chuyển đổi danh sách Employee Entity sang danh sách EmployeeDTO.
+     *
+     * @param list Danh sách các đối tượng Entity
+     * @return Danh sách các đối tượng DTO
+     */
     Iterable<EmployeeDTO> toList(Iterable<Employee> list);
-
 }

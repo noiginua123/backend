@@ -1,3 +1,8 @@
+/**
+ * Copyright(C) 2026 Luvina Software Company
+ *
+ * SecurityConfiguration.java, 16/08/2026 thanhvinh
+ */
 package com.luvina.la.config;
 
 import com.luvina.la.config.jwt.AuthEntryPoint;
@@ -20,6 +25,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+/**
+ * Lớp cấu hình bảo mật Spring Security và lọc JWT cho ứng dụng.
+ *
+ * @author thanhvinh
+ */
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -27,61 +37,94 @@ public class SecurityConfiguration {
 
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
-    SecurityConfiguration(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
+
+    /**
+     * Khởi tạo SecurityConfiguration với JwtTokenProvider và UserDetailsService.
+     *
+     * @param tokenProvider Provider tạo và xác thực Token JWT
+     * @param userDetailsService Service tải thông tin người dùng
+     */
+    public SecurityConfiguration(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
         this.tokenProvider = tokenProvider;
         this.userDetailsService = userDetailsService;
     }
 
+    /**
+     * Tạo Bean Filter chặn bắt request để xác thực JWT.
+     *
+     * @return JwtTokenFilter
+     */
     @Bean
     public JwtTokenFilter jwtTokenFilter() {
         return new JwtTokenFilter(this.tokenProvider, this.userDetailsService);
     }
 
+    /**
+     * Tạo Bean AuthenticationManager từ AuthenticationConfiguration.
+     *
+     * @param authenticationConfiguration Cấu hình Authentication
+     * @return AuthenticationManager
+     * @throws Exception Ngoại lệ nếu có lỗi trong quá trình lấy manager
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    /**
+     * Tạo Bean PasswordEncoder sử dụng thuật toán BCrypt.
+     *
+     * @return BCryptPasswordEncoder
+     */
     @Bean
     public PasswordEncoder encoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Cấu hình chuỗi lọc bảo mật SecurityFilterChain cho các HTTP requests.
+     *
+     * @param http Đối tượng HttpSecurity để cấu hình
+     * @return SecurityFilterChain đã được build
+     * @throws Exception Ngoại lệ khi xây dựng filter chain
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        // Enable CORS and disable CSRF
+        // Bật CORS và tắt CSRF cho kiến trúc Stateless REST API
         http.cors().and().csrf().disable();
 
-        // Apply headers and disable frameOptions
+        // Cấu hình headers và tắt frameOptions
         http.headers().frameOptions().disable();
 
-        // Set session management to stateless
+        // Thiết lập quản lý phiên làm việc Stateless
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        // Set permissions on endpoints
+        // Phân quyền cho các Endpoints
         http.authorizeRequests(authz -> authz
-                // public endpoints
+                // Các endpoint công khai
                 .antMatchers(Constants.ENDPOINTS_PUBLIC).permitAll()
-                // private endpoints with roles
-                .antMatchers(Constants.ENDPOINTS_WITH_ROLE).hasRole("USER")
+                // Các endpoint yêu cầu quyền USER hoặc ADMIN
+                .antMatchers(Constants.ENDPOINTS_WITH_ROLE).hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
         );
 
-        // Set unauthorized requests exception handler
+        // Đăng ký EntryPoint xử lý lỗi xác thực 401
         http.exceptionHandling().authenticationEntryPoint(new AuthEntryPoint());
 
-        // Token filter
+        // Đăng ký JWT Filter trước UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Used by spring security if CORS is enabled.
+    /**
+     * Cấu hình CorsFilter cho phép truy cập chéo tên miền (Cross-Origin).
+     *
+     * @return CorsFilter
+     */
     @Bean
     public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedHeader("*");
@@ -94,5 +137,4 @@ public class SecurityConfiguration {
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
-
 }

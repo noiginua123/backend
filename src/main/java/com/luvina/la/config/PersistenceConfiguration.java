@@ -1,3 +1,8 @@
+/**
+ * Copyright(C) 2026 Luvina Software Company
+ *
+ * PersistenceConfiguration.java, 16/08/2026 thanhvinh
+ */
 package com.luvina.la.config;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -11,6 +16,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
+/**
+ * Lớp cấu hình tầng Persistence, DataSource và kết nối HikariCP với Cơ sở dữ liệu.
+ *
+ * @author thanhvinh
+ */
 @Configuration
 @ComponentScan({"com.luvina.la"})
 @EntityScan("com.luvina.la.entity")
@@ -20,12 +30,22 @@ public class PersistenceConfiguration extends HikariConfig {
 
     private final Environment env;
 
-    PersistenceConfiguration(Environment env) {
+    /**
+     * Khởi tạo PersistenceConfiguration với Environment được inject.
+     *
+     * @param env Đối tượng môi trường của Spring
+     */
+    public PersistenceConfiguration(Environment env) {
         this.env = env;
     }
 
+    /**
+     * Khởi tạo Bean DataSource quản lý connection pool bởi HikariDataSource.
+     *
+     * @return DataSource kết nối Cơ sở dữ liệu
+     */
     @Bean
-    DataSource dataSource() {
+    public DataSource dataSource() {
         this.setAutoCommit(false);
         return new HikariDataSource(this);
     }
