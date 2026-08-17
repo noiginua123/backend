@@ -5,7 +5,7 @@
  */
 package com.luvina.la.config.jwt;
 
-import com.luvina.la.entity.Employee;
+import com.luvina.la.entity.EmployeeEntity;
 import java.util.Collection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,7 +25,7 @@ public class AuthUserDetails implements UserDetails {
 
     private static final long serialVersionUID = 1L;
 
-    private Employee employee;
+    private EmployeeEntity employee;
     private Collection<GrantedAuthority> authorities;
 
     /**

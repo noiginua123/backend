@@ -32,7 +32,7 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeCertification implements Serializable {
+public class EmployeeCertificationEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -59,10 +59,10 @@ public class EmployeeCertification implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", insertable = false, updatable = false)
     @ToString.Exclude
-    private Employee employee;
+    private EmployeeEntity employee;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "certification_id", insertable = false, updatable = false)
     @ToString.Exclude
-    private Certification certification;
+    private CertificationEntity certification;
 }

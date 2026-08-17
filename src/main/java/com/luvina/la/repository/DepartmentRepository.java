@@ -5,7 +5,7 @@
  */
 package com.luvina.la.repository;
 
-import com.luvina.la.entity.Department;
+import com.luvina.la.entity.DepartmentEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,5 +15,5 @@ import org.springframework.stereotype.Repository;
  * @author thanhvinh
  */
 @Repository
-public interface DepartmentRepository extends CrudRepository<Department, Long> {
+public interface DepartmentRepository extends CrudRepository<DepartmentEntity, Long> {
 }

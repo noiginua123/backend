@@ -1,9 +1,9 @@
 /**
  * Copyright(C) 2026 Luvina Software Company
  *
- * LoginRequest.java, 16/08/2026 thanhvinh
+ * LoginRequest.java, 17/08/2026 thanhvinh
  */
-package com.luvina.la.payload;
+package com.luvina.la.payload.request;
 
 import java.io.Serializable;
 import lombok.AllArgsConstructor;

@@ -6,7 +6,7 @@
 package com.luvina.la.mapper;
 
 import com.luvina.la.dto.EmployeeDTO;
-import com.luvina.la.entity.Employee;
+import com.luvina.la.entity.EmployeeEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -27,7 +27,7 @@ public interface EmployeeMapper {
      * @param dto Đối tượng DTO của nhân viên
      * @return Đối tượng Entity của nhân viên
      */
-    Employee toEntity(EmployeeDTO dto);
+    EmployeeEntity toEntity(EmployeeDTO dto);
 
     /**
      * Chuyển đổi từ Employee Entity sang EmployeeDTO kèm theo tên phòng ban.
@@ -36,7 +36,7 @@ public interface EmployeeMapper {
      * @return Đối tượng DTO của nhân viên
      */
     @Mapping(source = "department.departmentName", target = "departmentName")
-    EmployeeDTO toDto(Employee entity);
+    EmployeeDTO toDto(EmployeeEntity entity);
 
     /**
      * Chuyển đổi danh sách Employee Entity sang danh sách EmployeeDTO.
@@ -44,5 +44,5 @@ public interface EmployeeMapper {
      * @param list Danh sách các đối tượng Entity
      * @return Danh sách các đối tượng DTO
      */
-    Iterable<EmployeeDTO> toList(Iterable<Employee> list);
+    Iterable<EmployeeDTO> toList(Iterable<EmployeeEntity> list);
 }

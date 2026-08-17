@@ -5,7 +5,7 @@
  */
 package com.luvina.la.config.jwt;
 
-import com.luvina.la.entity.Employee;
+import com.luvina.la.entity.EmployeeEntity;
 import com.luvina.la.repository.EmployeeRepository;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,10 +45,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Employee> entity = this.userRepository.findByEmployeeLoginId(username);
+        Optional<EmployeeEntity> entity = this.userRepository.findByEmployeeLoginId(username);
 
         if (entity.isPresent()) {
-            Employee employee = entity.get();
+            EmployeeEntity employee = entity.get();
             // Role: 1 = Admin, 0 = User
             String roleName = (employee.getRole() != null && employee.getRole() == 1) ? "ROLE_ADMIN" : "ROLE_USER";
             Collection<GrantedAuthority> roles = Collections.singleton(new SimpleGrantedAuthority(roleName));

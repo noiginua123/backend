@@ -1,9 +1,9 @@
 /**
  * Copyright(C) 2026 Luvina Software Company
  *
- * LoginResponse.java, 16/08/2026 thanhvinh
+ * LoginResponse.java, 17/08/2026 thanhvinh
  */
-package com.luvina.la.payload;
+package com.luvina.la.payload.response;
 
 import java.io.Serializable;
 import java.util.HashMap;

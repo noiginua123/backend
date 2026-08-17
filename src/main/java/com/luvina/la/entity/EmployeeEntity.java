@@ -34,7 +34,7 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Employee implements Serializable {
+public class EmployeeEntity implements Serializable {
 
     private static final long serialVersionUID = 5771173953267484096L;
 
@@ -76,9 +76,9 @@ public class Employee implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", insertable = false, updatable = false)
     @ToString.Exclude
-    private Department department;
+    private DepartmentEntity department;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude
-    private List<EmployeeCertification> employeeCertifications;
+    private List<EmployeeCertificationEntity> employeeCertifications;
 }

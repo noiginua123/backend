@@ -5,7 +5,7 @@
  */
 package com.luvina.la.repository;
 
-import com.luvina.la.entity.EmployeeCertification;
+import com.luvina.la.entity.EmployeeCertificationEntity;
 import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
  * @author thanhvinh
  */
 @Repository
-public interface EmployeeCertificationRepository extends CrudRepository<EmployeeCertification, Long> {
+public interface EmployeeCertificationRepository extends CrudRepository<EmployeeCertificationEntity, Long> {
 
     /**
      * Tìm kiếm danh sách chứng chỉ theo mã ID của nhân viên.
@@ -24,7 +24,7 @@ public interface EmployeeCertificationRepository extends CrudRepository<Employee
      * @param employeeId Mã định danh nhân viên
      * @return Danh sách chứng chỉ thuộc về nhân viên đó
      */
-    List<EmployeeCertification> findByEmployeeId(Long employeeId);
+    List<EmployeeCertificationEntity> findByEmployeeId(Long employeeId);
 
     /**
      * Xóa toàn bộ chứng chỉ liên quan đến một nhân viên theo mã ID.

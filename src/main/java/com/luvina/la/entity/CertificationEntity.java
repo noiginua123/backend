@@ -30,7 +30,7 @@ import lombok.ToString;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Certification implements Serializable {
+public class CertificationEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -50,5 +50,5 @@ public class Certification implements Serializable {
      */
     @OneToMany(mappedBy = "certification", fetch = FetchType.LAZY)
     @ToString.Exclude
-    private List<EmployeeCertification> employeeCertifications;
+    private List<EmployeeCertificationEntity> employeeCertifications;
 }

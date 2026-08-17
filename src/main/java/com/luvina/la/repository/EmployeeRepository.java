@@ -5,7 +5,7 @@
  */
 package com.luvina.la.repository;
 
-import com.luvina.la.entity.Employee;
+import com.luvina.la.entity.EmployeeEntity;
 import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
  * @author thanhvinh
  */
 @Repository
-public interface EmployeeRepository extends CrudRepository<Employee, Long> {
+public interface EmployeeRepository extends CrudRepository<EmployeeEntity, Long> {
 
     /**
      * Tìm kiếm nhân viên theo tên đăng nhập (login id).
@@ -24,7 +24,7 @@ public interface EmployeeRepository extends CrudRepository<Employee, Long> {
      * @param employeeLoginId Tên tài khoản đăng nhập
      * @return Optional chứa Employee nếu tìm thấy, hoặc empty nếu không tồn tại
      */
-    Optional<Employee> findByEmployeeLoginId(String employeeLoginId);
+    Optional<EmployeeEntity> findByEmployeeLoginId(String employeeLoginId);
 
     /**
      * Tìm kiếm nhân viên theo mã ID nhân viên.
@@ -32,5 +32,5 @@ public interface EmployeeRepository extends CrudRepository<Employee, Long> {
      * @param employeeId Mã định danh nhân viên
      * @return Optional chứa Employee nếu tìm thấy, hoặc empty nếu không tồn tại
      */
-    Optional<Employee> findByEmployeeId(Long employeeId);
+    Optional<EmployeeEntity> findByEmployeeId(Long employeeId);
 }

@@ -61,7 +61,9 @@ You can use "Postman" to run the test: `https://www.postman.com`
         /dto (Contains DTO class, intermediate class that transfer data between payload and entity)
         /entity (Contains entity class, attribute mapping with table)
         /mapper
-        /payload (Contains Request/Response class)
+        /payload
+          /request (Contains Request classes)
+          /response (Contains Response classes)
         /repository
         /service
           /impl
