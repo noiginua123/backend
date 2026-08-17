@@ -18,8 +18,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -29,7 +31,10 @@ import lombok.ToString;
  */
 @Entity
 @Table(name = "employees_certifications")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmployeeCertificationEntity implements Serializable {
@@ -39,6 +44,7 @@ public class EmployeeCertificationEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "employee_certification_id", unique = true, nullable = false)
+    @EqualsAndHashCode.Include
     private Long employeeCertificationId;
 
     @Column(name = "employee_id", nullable = false)

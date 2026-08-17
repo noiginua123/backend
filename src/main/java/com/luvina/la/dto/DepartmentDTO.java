@@ -1,27 +1,33 @@
 /**
- * Copyright(C) 2026 Luvina Software Company
+ * Copyright(C) 2026  Luvina Software Company
  *
- * DepartmentDTO.java, 16/08/2026 thanhvinh
+ * DepartmentDTO.java, 17/08/2026 thanhvinh
  */
 package com.luvina.la.dto;
 
 import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * Data Transfer Object (DTO) chứa thông tin phòng ban.
+ * DTO chứa thông tin phòng ban để trả về cho client.
  *
  * @author thanhvinh
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class DepartmentDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /** ID phòng ban (departments.department_id). */
     private Long departmentId;
+
+    /** Tên phòng ban (departments.department_name). */
     private String departmentName;
 }

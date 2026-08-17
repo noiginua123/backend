@@ -45,3 +45,7 @@ src/main/resources/application-local.*
 .env
 .env.*
 
+### Markdown Files ###
+*.md
+!README.md
+

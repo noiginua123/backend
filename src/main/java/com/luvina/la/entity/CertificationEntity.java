@@ -16,8 +16,10 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -27,7 +29,10 @@ import lombok.ToString;
  */
 @Entity
 @Table(name = "certifications")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class CertificationEntity implements Serializable {
@@ -37,6 +42,7 @@ public class CertificationEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "certification_id", unique = true, nullable = false)
+    @EqualsAndHashCode.Include
     private Long certificationId;
 
     @Column(name = "certification_name", nullable = false, length = 50)

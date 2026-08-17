@@ -20,8 +20,10 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -31,7 +33,10 @@ import lombok.ToString;
  */
 @Entity
 @Table(name = "employees")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class EmployeeEntity implements Serializable {
@@ -41,6 +46,7 @@ public class EmployeeEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "employee_id", unique = true, nullable = false)
+    @EqualsAndHashCode.Include
     private Long employeeId;
 
     @Column(name = "department_id", nullable = false)
@@ -61,10 +67,10 @@ public class EmployeeEntity implements Serializable {
     @Column(name = "employee_telephone", length = 50)
     private String employeeTelephone;
 
-    @Column(name = "employee_login_id", nullable = false, length = 50)
+    @Column(name = "employee_login_id", unique = true, nullable = false, length = 50)
     private String employeeLoginId;
 
-    @Column(name = "employee_login_password", length = 100)
+    @Column(name = "employee_login_password", nullable = false, length = 100)
     private String employeeLoginPassword;
 
     /**
