@@ -30,6 +30,8 @@ public final class Constants {
     public static final String[] ENDPOINTS_WITH_ROLE = new String[] {
             "/user/**",
             "/employee/**",
+            "/employees/**",
+            "/employees",
             "/department/**",
             "/certification/**"
     };

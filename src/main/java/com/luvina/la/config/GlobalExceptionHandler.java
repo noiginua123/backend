@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.luvina.la.constant.Constants;
+import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.response.ErrorResponse;
 import com.luvina.la.payload.response.Message;
 
@@ -23,6 +24,19 @@ import com.luvina.la.payload.response.Message;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Xử lý ngoại lệ nghiệp vụ AppException → trả HTTP 500, code 500, message lỗi tương ứng.
+     *
+     * @param ex ngoại lệ AppException xảy ra.
+     * @return ResponseEntity chứa ErrorResponse.
+     */
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ErrorResponse> handleAppException(AppException ex) {
+        Message message = new Message(ex.getCode(), ex.getParams());
+        ErrorResponse body = new ErrorResponse(Constants.CODE_ERROR, message);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+    }
 
     /**
      * Bắt mọi exception chưa được xử lý → trả code 500, message ER023.
@@ -37,3 +51,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }
+

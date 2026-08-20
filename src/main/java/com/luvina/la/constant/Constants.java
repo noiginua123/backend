@@ -21,6 +21,13 @@ public class Constants {
     /** Code trả về khi lỗi hệ thống. */
     public static final Long CODE_ERROR = 500L;
 
+    /** Mã lỗi trường bán giác / số nửa độ rộng. */
+    public static final String ER018 = "ER018";
+
+    /** Mã lỗi thứ tự sắp xếp không hợp lệ. */
+    public static final String ER021 = "ER021";
+
     /** Mã lỗi hệ thống. */
     public static final String ER023 = "ER023";
 }
+

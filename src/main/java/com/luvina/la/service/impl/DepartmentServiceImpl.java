@@ -40,9 +40,9 @@ public class DepartmentServiceImpl implements DepartmentService {
      */
     @Override
     public ListDepartmentResponse getListDepartments() {
-        if (true) {
-            throw new RuntimeException("Test ER023");
-        }
+        // if (true) {
+        //     throw new RuntimeException("Test ER023");
+        // }
         List<DepartmentEntity> entities = departmentRepository.findAll();
         List<DepartmentDTO> departments = entities.stream()
                 .map(departmentMapper::toDto)
