@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Response cho API Get List Employees (trường hợp thành công).
+ * Response cho API Get List Employees.
  *
  * @author thanhvinh
  */
@@ -28,7 +28,7 @@ public class ListEmployeeResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** Mã code (200 khi thành công). */
+    /** Mã code, 200 khi thành công. */
     private Long code;
 
     /** Tổng số bản ghi thỏa mãn điều kiện tìm kiếm. */

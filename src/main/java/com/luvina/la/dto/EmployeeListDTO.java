@@ -26,30 +26,33 @@ public class EmployeeListDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** ID nhân viên (employees.employee_id). */
+    /** ID nhân viên. */
     private Long employeeId;
 
-    /** Tên nhân viên (employees.employee_name). */
+    /** Tên nhân viên. */
     private String employeeName;
 
     /** Ngày sinh nhân viên định dạng yyyy/MM/dd. */
     private String employeeBirthDate;
 
-    /** Tên phòng ban (departments.department_name). */
+    /** Tên phòng ban. */
     private String departmentName;
 
-    /** Địa chỉ email nhân viên (employees.employee_email). */
+    /** Địa chỉ email nhân viên. */
     private String employeeEmail;
 
-    /** Số điện thoại liên hệ (employees.employee_telephone). */
+    /** Số điện thoại nhân viên. */
     private String employeeTelephone;
 
-    /** Tên chứng chỉ cao nhất (certifications.certification_name). */
+    /** Tên chứng chỉ cao nhất. */
     private String certificationName;
 
-    /** Ngày kết thúc chứng chỉ định dạng yyyy/MM/dd. */
+    /** Ngày hết hạn chứng chỉ định dạng yyyy/MM/dd. */
     private String endDate;
 
-    /** Điểm số chứng chỉ (employees_certifications.score). */
+    /** Điểm số chứng chỉ. */
     private BigDecimal score;
+
+    /** Quyền của nhân viên: 1 là admin, 0 là user. */
+    private Integer role;
 }

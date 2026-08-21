@@ -5,6 +5,7 @@
  */
 package com.luvina.la.service;
 
+import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.response.ListEmployeeResponse;
 
 /**
@@ -15,16 +16,18 @@ import com.luvina.la.payload.response.ListEmployeeResponse;
 public interface EmployeeService {
 
     /**
-     * Tìm kiếm, sắp xếp và phân trang danh sách nhân viên.
+     * Kiểm tra điều kiện đầu vào, tìm kiếm và phân trang danh sách nhân viên,
+     * bao gồm cả tài khoản admin.
      *
-     * @param employeeName Tên nhân viên cần tìm kiếm
-     * @param departmentId ID phòng ban
-     * @param ordEmployeeName Hướng sắp xếp theo tên nhân viên (ASC / DESC)
-     * @param ordCertificationName Hướng sắp xếp theo tên chứng chỉ (ASC / DESC)
-     * @param ordEndDate Hướng sắp xếp theo ngày kết thúc chứng chỉ (ASC / DESC)
-     * @param offset Vị trí bắt đầu bản ghi (chuỗi số nguyên >= 0)
-     * @param limit Số lượng bản ghi mỗi trang (chuỗi số nguyên > 0)
-     * @return ListEmployeeResponse chứa tổng số bản ghi và danh sách nhân viên
+     * @param employeeName Tên cần tìm gần đúng, hoặc chuỗi rỗng nếu không tìm theo tên
+     * @param departmentId ID phòng ban dạng chuỗi, hoặc chuỗi rỗng nếu lấy tất cả
+     * @param ordEmployeeName ASC/DESC để sort tên, hoặc chuỗi rỗng
+     * @param ordCertificationName ASC/DESC để sort chứng chỉ, hoặc chuỗi rỗng
+     * @param ordEndDate ASC/DESC để sort ngày hết hạn, hoặc chuỗi rỗng
+     * @param offset Vị trí bản ghi bắt đầu, phải là số nguyên không âm
+     * @param limit Số bản ghi tối đa, phải là số nguyên dương
+     * @return Response chứa code thành công, tổng số bản ghi và danh sách nhân viên
+     * @throws AppException Khi sort, offset, limit, departmentId hoặc employeeName không hợp lệ
      */
     ListEmployeeResponse searchEmployees(String employeeName,
                                         String departmentId,

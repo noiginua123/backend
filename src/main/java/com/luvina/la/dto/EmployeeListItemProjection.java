@@ -8,7 +8,7 @@ package com.luvina.la.dto;
 import java.math.BigDecimal;
 
 /**
- * Interface projection hứng dữ liệu kết quả từ câu truy vấn native query danh sách nhân viên.
+ * Projection hứng dữ liệu từ native query danh sách nhân viên.
  *
  * @author thanhvinh
  */
@@ -29,7 +29,7 @@ public interface EmployeeListItemProjection {
     String getEmployeeName();
 
     /**
-     * Lấy ngày sinh nhân viên đã định dạng chuỗi (yyyy/MM/dd).
+     * Lấy ngày sinh nhân viên định dạng yyyy/MM/dd.
      *
      * @return Ngày sinh nhân viên
      */
@@ -43,7 +43,7 @@ public interface EmployeeListItemProjection {
     String getDepartmentName();
 
     /**
-     * Lấy địa chỉ email nhân viên.
+     * Lấy email nhân viên.
      *
      * @return Email nhân viên
      */
@@ -59,21 +59,28 @@ public interface EmployeeListItemProjection {
     /**
      * Lấy tên chứng chỉ cao nhất.
      *
-     * @return Tên chứng chỉ hoặc null nếu chưa có
+     * @return Tên chứng chỉ hoặc null
      */
     String getCertificationName();
 
     /**
-     * Lấy ngày kết thúc chứng chỉ đã định dạng chuỗi (yyyy/MM/dd).
+     * Lấy ngày hết hạn chứng chỉ định dạng yyyy/MM/dd.
      *
-     * @return Ngày kết thúc hoặc null nếu chưa có
+     * @return Ngày hết hạn hoặc null
      */
     String getEndDate();
 
     /**
      * Lấy điểm số chứng chỉ.
      *
-     * @return Điểm số hoặc null nếu chưa có
+     * @return Điểm số hoặc null
      */
     BigDecimal getScore();
+
+    /**
+     * Lấy quyền của nhân viên.
+     *
+     * @return true nếu là admin, false nếu là user
+     */
+    Boolean getRole();
 }

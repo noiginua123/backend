@@ -11,7 +11,7 @@ import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.dto.EmployeeListItemProjection;
 
 /**
- * Component chuyển đổi dữ liệu từ EmployeeListItemProjection sang EmployeeListDTO.
+ * Chuyển đổi projection danh sách nhân viên sang DTO response.
  *
  * @author thanhvinh
  */
@@ -19,10 +19,10 @@ import com.luvina.la.dto.EmployeeListItemProjection;
 public class EmployeeMapper {
 
     /**
-     * Convert một projection kết quả truy vấn nhân viên sang DTO phẳng.
+     * Chuyển projection kết quả truy vấn thành DTO.
      *
-     * @param projection projection chứa dữ liệu dòng truy vấn
-     * @return EmployeeListDTO tương ứng, hoặc null nếu projection là null
+     * @param projection Projection chứa dữ liệu nhân viên
+     * @return DTO nhân viên tương ứng hoặc null
      */
     public EmployeeListDTO toDTO(EmployeeListItemProjection projection) {
         if (projection == null) {
@@ -37,7 +37,8 @@ public class EmployeeMapper {
                 projection.getEmployeeTelephone(),
                 projection.getCertificationName(),
                 projection.getEndDate(),
-                projection.getScore()
+                projection.getScore(),
+                Boolean.TRUE.equals(projection.getRole()) ? 1 : 0
         );
     }
 }

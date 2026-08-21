@@ -13,7 +13,7 @@ import com.luvina.la.constant.Constants;
 import com.luvina.la.exception.AppException;
 
 /**
- * Lớp kiểm tra tính hợp lệ của dữ liệu đầu vào cho các chức năng liên quan đến nhân viên.
+ * Kiểm tra dữ liệu đầu vào của chức năng danh sách nhân viên.
  *
  * @author thanhvinh
  */
@@ -21,102 +21,134 @@ import com.luvina.la.exception.AppException;
 public class EmployeeValidator {
 
     private static final int DEFAULT_OFFSET = 0;
+
     private static final int DEFAULT_LIMIT = 5;
 
     /**
-     * Kiểm tra tính hợp lệ của các tham số sắp xếp (chỉ chấp nhận rỗng hoặc "ASC", "DESC").
+     * Kiểm tra hướng sắp xếp, chỉ chấp nhận rỗng, ASC hoặc DESC.
      *
-     * @param order Giá trị hướng sắp xếp
-     * @throws AppException khi giá trị không hợp lệ (mã lỗi ER021)
+     * @param order Hướng sắp xếp
+     * @throws AppException Khi hướng sắp xếp không hợp lệ
      */
     public void validateSortOrder(String order) {
         if (order != null && !order.trim().isEmpty()) {
-            String trimmed = order.trim();
-            if (!"ASC".equals(trimmed) && !"DESC".equals(trimmed)) {
+            String trimmedOrder = order.trim();
+            if (!"ASC".equals(trimmedOrder) && !"DESC".equals(trimmedOrder)) {
                 throw new AppException(Constants.ER021);
             }
         }
     }
 
     /**
-     * Kiểm tra và parse chuỗi số nguyên không âm (tối đa 9 chữ số để an toàn tránh tràn int).
+     * Kiểm tra và chuyển offset sang số nguyên không âm.
      *
-     * @param raw Chuỗi cần parse
-     * @param defaultValue Giá trị mặc định khi chuỗi rỗng/null
-     * @param allowZero Cho phép giá trị 0 hay không
-     * @param fieldLabel Nhãn dùng cho thông báo lỗi
-     * @return Số nguyên hợp lệ
-     * @throws AppException khi chuỗi không hợp lệ (mã lỗi ER018)
-     */
-    private int parseUnsignedInt(String raw, int defaultValue, boolean allowZero, String fieldLabel) {
-        if (raw == null || raw.trim().isEmpty()) {
-            return defaultValue;
-        }
-        String trimmed = raw.trim();
-        if (!trimmed.matches("^[0-9]{1,9}$")) {
-            throw new AppException(Constants.ER018, List.of(fieldLabel));
-        }
-        int value = Integer.parseInt(trimmed);
-        if (!allowZero && value == 0) {
-            throw new AppException(Constants.ER018, List.of(fieldLabel));
-        }
-        return value;
-    }
-
-    /**
-     * Kiểm tra và chuyển đổi chuỗi offset sang số nguyên >= 0.
-     *
-     * @param offset Chuỗi offset
-     * @return Số nguyên offset hợp lệ
-     * @throws AppException khi chuỗi không phải số nguyên >= 0 (mã lỗi ER018)
+     * @param offset Offset dạng chuỗi
+     * @return Offset hợp lệ
+     * @throws AppException Khi offset không phải số nguyên không âm
      */
     public int validateAndParseOffset(String offset) {
         return parseUnsignedInt(offset, DEFAULT_OFFSET, true, "オフセット");
     }
 
     /**
-     * Kiểm tra và chuyển đổi chuỗi limit sang số nguyên > 0.
+     * Kiểm tra và chuyển limit sang số nguyên dương.
      *
-     * @param limit Chuỗi limit
-     * @return Số nguyên limit hợp lệ
-     * @throws AppException khi chuỗi không phải số nguyên > 0 (mã lỗi ER018)
+     * @param limit Limit dạng chuỗi
+     * @return Limit hợp lệ
+     * @throws AppException Khi limit không phải số nguyên dương
      */
     public int validateAndParseLimit(String limit) {
         return parseUnsignedInt(limit, DEFAULT_LIMIT, false, "リミット");
     }
 
     /**
-     * Chuyển đổi và kiểm tra chuỗi department_id sang Long (tối đa 18 chữ số để tránh tràn Long).
+     * Chuyển ID phòng ban sang số nguyên dương.
      *
-     * @param departmentId Chuỗi ID phòng ban
-     * @return Long ID phòng ban hoặc null nếu chuỗi rỗng
-     * @throws AppException khi chuỗi không phải số nguyên dương (mã lỗi ER018)
+     * @param departmentId ID phòng ban dạng chuỗi
+     * @return ID phòng ban hoặc null
+     * @throws AppException Khi ID phòng ban không hợp lệ
      */
     public Long parseDepartmentId(String departmentId) {
         if (departmentId == null || departmentId.trim().isEmpty()) {
             return null;
         }
-        String trimmed = departmentId.trim();
-        if (!trimmed.matches("^[0-9]{1,18}$")) {
-            throw new AppException(Constants.ER018, List.of("部門ID"));
+
+        String trimmedDepartmentId = departmentId.trim();
+        if (!trimmedDepartmentId.matches("^[0-9]{1,18}$")) {
+            throw new AppException(
+                    Constants.ER018,
+                    List.of(Constants.FIELD_LABEL_DEPARTMENT_ID)
+            );
         }
-        return Long.parseLong(trimmed);
+
+        Long parsedDepartmentId = Long.valueOf(trimmedDepartmentId);
+        if (parsedDepartmentId == 0L) {
+            throw new AppException(
+                    Constants.ER018,
+                    List.of(Constants.FIELD_LABEL_DEPARTMENT_ID)
+            );
+        }
+        return parsedDepartmentId;
     }
 
     /**
-     * Escape các ký tự đặc biệt cho câu lệnh LIKE và bao quanh bởi '%'.
+     * Kiểm tra độ dài và escape tên nhân viên cho điều kiện LIKE.
      *
-     * @param employeeName Tên nhân viên gốc
-     * @return Chuỗi đã escape hoặc null nếu tên nhân viên rỗng
+     * @param employeeName Tên nhân viên cần tìm kiếm
+     * @return Mẫu LIKE đã escape hoặc null
+     * @throws AppException Khi tên nhân viên vượt quá 125 ký tự
      */
-    public String escapeEmployeeName(String employeeName) {
-        if (employeeName == null || employeeName.trim().isEmpty()) {
+    public String validateAndEscapeEmployeeName(String employeeName) {
+        if (employeeName == null) {
             return null;
         }
-        String escaped = employeeName.trim()
+
+        int characterCount = employeeName.codePointCount(0, employeeName.length());
+        if (characterCount > Constants.EMPLOYEE_NAME_MAX_LENGTH) {
+            throw new AppException(
+                    Constants.ER006,
+                    List.of(Constants.EMPLOYEE_NAME_MAX_LENGTH, Constants.FIELD_LABEL_FULLNAME)
+            );
+        }
+
+        if (employeeName.trim().isEmpty()) {
+            return null;
+        }
+
+        String escapedEmployeeName = employeeName.trim()
                 .replace("!", "!!")
                 .replace("%", "!%")
                 .replace("_", "!_");
-        return "%" + escaped + "%";
+        return "%" + escapedEmployeeName + "%";
+    }
+
+    /**
+     * Chuyển chuỗi số nguyên không âm sang int.
+     *
+     * @param raw Giá trị đầu vào
+     * @param defaultValue Giá trị mặc định
+     * @param allowZero Có cho phép giá trị 0 hay không
+     * @param fieldLabel Nhãn trường dùng trong message
+     * @return Giá trị số nguyên hợp lệ
+     * @throws AppException Khi giá trị không hợp lệ
+     */
+    private int parseUnsignedInt(String raw,
+                                 int defaultValue,
+                                 boolean allowZero,
+                                 String fieldLabel) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return defaultValue;
+        }
+
+        String trimmedValue = raw.trim();
+        if (!trimmedValue.matches("^[0-9]{1,9}$")) {
+            throw new AppException(Constants.ER018, List.of(fieldLabel));
+        }
+
+        int parsedValue = Integer.parseInt(trimmedValue);
+        if (!allowZero && parsedValue == 0) {
+            throw new AppException(Constants.ER018, List.of(fieldLabel));
+        }
+        return parsedValue;
     }
 }
