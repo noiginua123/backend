@@ -7,7 +7,7 @@ package com.luvina.la.repository;
 
 import com.luvina.la.entity.EmployeeCertificationEntity;
 import java.util.List;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
  * @author thanhvinh
  */
 @Repository
-public interface EmployeeCertificationRepository extends CrudRepository<EmployeeCertificationEntity, Long> {
+public interface EmployeeCertificationRepository extends JpaRepository<EmployeeCertificationEntity, Long> {
 
     /**
      * Tìm kiếm danh sách chứng chỉ theo mã ID của nhân viên.

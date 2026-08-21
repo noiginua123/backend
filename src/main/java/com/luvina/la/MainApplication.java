@@ -5,8 +5,8 @@
  */
 package com.luvina.la;
 
-import com.luvina.la.config.Constants;
 import com.luvina.la.config.DefaultProfileUtil;
+import com.luvina.la.constant.Constants;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;

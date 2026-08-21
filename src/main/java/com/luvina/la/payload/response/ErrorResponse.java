@@ -1,5 +1,5 @@
 /**
- * Copyright(C) 2026  Luvina Software Company
+ * Copyright(C) 2026 Luvina Software Company
  *
  * ErrorResponse.java, 17/08/2026 thanhvinh
  */
@@ -29,5 +29,5 @@ public class ErrorResponse implements Serializable {
     private Long code;
 
     /** Nội dung lỗi. */
-    private Message message;
+    private MessageResponse message;
 }

@@ -9,7 +9,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.luvina.la.config.Constants;
+import com.luvina.la.constant.Constants;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Date;

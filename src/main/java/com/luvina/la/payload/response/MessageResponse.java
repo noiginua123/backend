@@ -1,7 +1,7 @@
 /**
- * Copyright(C) 2026  Luvina Software Company
+ * Copyright(C) 2026 Luvina Software Company
  *
- * Message.java, 17/08/2026 thanhvinh
+ * MessageResponse.java, 17/08/2026 thanhvinh
  */
 package com.luvina.la.payload.response;
 
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Object mô tả nội dung lỗi: mã lỗi và tham số.
+ * Object mô tả nội dung lỗi: mã lỗi và tham số trả về trong response.
  *
  * @author thanhvinh
  */
@@ -22,7 +22,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Message implements Serializable {
+public class MessageResponse implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

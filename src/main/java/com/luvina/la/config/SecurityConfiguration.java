@@ -8,6 +8,7 @@ package com.luvina.la.config;
 import com.luvina.la.config.jwt.AuthEntryPoint;
 import com.luvina.la.config.jwt.JwtTokenFilter;
 import com.luvina.la.config.jwt.JwtTokenProvider;
+import com.luvina.la.constant.Constants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

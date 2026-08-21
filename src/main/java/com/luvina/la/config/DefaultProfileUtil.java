@@ -8,6 +8,7 @@ package com.luvina.la.config;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.boot.SpringApplication;
+import com.luvina.la.constant.Constants;
 
 /**
  * Lớp tiện ích cấu hình Spring Profile mặc định khi khởi động ứng dụng.

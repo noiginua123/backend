@@ -16,11 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.luvina.la.constant.Constants;
 import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.dto.EmployeeListItemProjection;
-import com.luvina.la.exception.AppException;
 import com.luvina.la.mapper.EmployeeMapper;
 import com.luvina.la.payload.response.ListEmployeeResponse;
 import com.luvina.la.repository.EmployeeRepository;
 import com.luvina.la.service.EmployeeService;
+import com.luvina.la.validator.EmployeeValidator;
 
 /**
  * Hiện thực các nghiệp vụ liên quan đến nhân viên.
@@ -31,14 +31,14 @@ import com.luvina.la.service.EmployeeService;
 @Transactional(readOnly = true)
 public class EmployeeServiceImpl implements EmployeeService {
 
-    private static final int DEFAULT_OFFSET = 0;
-    private static final int DEFAULT_LIMIT = 5;
-
     @Autowired
     private EmployeeRepository employeeRepository;
 
     @Autowired
     private EmployeeMapper employeeMapper;
+
+    @Autowired
+    private EmployeeValidator employeeValidator;
 
     /**
      * Tìm kiếm, sắp xếp và phân trang danh sách nhân viên theo tiêu chí.
@@ -61,21 +61,21 @@ public class EmployeeServiceImpl implements EmployeeService {
                                                 String offset,
                                                 String limit) {
         // 1. Validate các tham số sắp xếp
-        validateSortOrder(ordEmployeeName);
-        validateSortOrder(ordCertificationName);
-        validateSortOrder(ordEndDate);
+        employeeValidator.validateSortOrder(ordEmployeeName);
+        employeeValidator.validateSortOrder(ordCertificationName);
+        employeeValidator.validateSortOrder(ordEndDate);
 
         // 2. Validate và parse offset
-        int parsedOffset = validateAndParseOffset(offset);
+        int parsedOffset = employeeValidator.validateAndParseOffset(offset);
 
         // 3. Validate và parse limit
-        int parsedLimit = validateAndParseLimit(limit);
+        int parsedLimit = employeeValidator.validateAndParseLimit(limit);
 
         // 4. Parse department_id
-        Long parsedDepartmentId = parseDepartmentId(departmentId);
+        Long parsedDepartmentId = employeeValidator.parseDepartmentId(departmentId);
 
         // 5. Escape ký tự đặc biệt trong employee_name
-        String escapedEmployeeName = escapeEmployeeName(employeeName);
+        String escapedEmployeeName = employeeValidator.escapeEmployeeName(employeeName);
 
         // 6. Đếm tổng số bản ghi
         long totalRecords = employeeRepository.countEmployees(escapedEmployeeName, parsedDepartmentId);
@@ -103,102 +103,5 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .collect(Collectors.toList());
 
         return new ListEmployeeResponse(Constants.CODE_SUCCESS, totalRecords, employees);
-    }
-
-    /**
-     * Kiểm tra giá trị tham số sắp xếp (chỉ chấp nhận rỗng hoặc "ASC", "DESC").
-     *
-     * @param order Giá trị hướng sắp xếp
-     * @throws AppException khi giá trị không hợp lệ (mã lỗi ER021)
-     */
-    private void validateSortOrder(String order) {
-        if (order != null && !order.trim().isEmpty()) {
-            String trimmed = order.trim();
-            if (!"ASC".equals(trimmed) && !"DESC".equals(trimmed)) {
-                throw new AppException(Constants.ER021);
-            }
-        }
-    }
-
-    /**
-     * Kiểm tra và chuyển đổi chuỗi offset sang số nguyên >= 0.
-     *
-     * @param offset Chuỗi offset
-     * @return Số nguyên offset hợp lệ
-     * @throws AppException khi chuỗi không phải số nguyên >= 0 (mã lỗi ER018)
-     */
-    private int validateAndParseOffset(String offset) {
-        if (offset == null || offset.trim().isEmpty()) {
-            return DEFAULT_OFFSET;
-        }
-        String trimmed = offset.trim();
-        if (!trimmed.matches("^[0-9]+$")) {
-            throw new AppException(Constants.ER018, List.of("オフセット"));
-        }
-        try {
-            int val = Integer.parseInt(trimmed);
-            if (val < 0) {
-                throw new AppException(Constants.ER018, List.of("オフセット"));
-            }
-            return val;
-        } catch (NumberFormatException e) {
-            throw new AppException(Constants.ER018, List.of("オフセット"));
-        }
-    }
-
-    /**
-     * Kiểm tra và chuyển đổi chuỗi limit sang số nguyên > 0.
-     *
-     * @param limit Chuỗi limit
-     * @return Số nguyên limit hợp lệ
-     * @throws AppException khi chuỗi không phải số nguyên > 0 (mã lỗi ER018)
-     */
-    private int validateAndParseLimit(String limit) {
-        if (limit == null || limit.trim().isEmpty()) {
-            return DEFAULT_LIMIT;
-        }
-        String trimmed = limit.trim();
-        if (!trimmed.matches("^[0-9]+$")) {
-            throw new AppException(Constants.ER018, List.of("リミット"));
-        }
-        try {
-            int val = Integer.parseInt(trimmed);
-            if (val <= 0) {
-                throw new AppException(Constants.ER018, List.of("リミット"));
-            }
-            return val;
-        } catch (NumberFormatException e) {
-            throw new AppException(Constants.ER018, List.of("リミット"));
-        }
-    }
-
-    /**
-     * Chuyển đổi chuỗi department_id sang Long.
-     *
-     * @param departmentId Chuỗi ID phòng ban
-     * @return Long ID phòng ban hoặc null nếu chuỗi rỗng
-     */
-    private Long parseDepartmentId(String departmentId) {
-        if (departmentId == null || departmentId.trim().isEmpty()) {
-            return null;
-        }
-        return Long.parseLong(departmentId.trim());
-    }
-
-    /**
-     * Escape các ký tự đặc biệt cho câu lệnh LIKE và bao quanh bởi '%'.
-     *
-     * @param employeeName Tên nhân viên gốc
-     * @return Chuỗi đã escape hoặc null nếu tên nhân viên rỗng
-     */
-    private String escapeEmployeeName(String employeeName) {
-        if (employeeName == null || employeeName.trim().isEmpty()) {
-            return null;
-        }
-        String escaped = employeeName.trim()
-                .replace("!", "!!")
-                .replace("%", "!%")
-                .replace("_", "!_");
-        return "%" + escaped + "%";
     }
 }

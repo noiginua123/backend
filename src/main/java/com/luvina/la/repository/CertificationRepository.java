@@ -7,7 +7,7 @@ package com.luvina.la.repository;
 
 import com.luvina.la.entity.CertificationEntity;
 import java.util.List;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
  * @author thanhvinh
  */
 @Repository
-public interface CertificationRepository extends CrudRepository<CertificationEntity, Long> {
+public interface CertificationRepository extends JpaRepository<CertificationEntity, Long> {
 
     /**
      * Lấy toàn bộ danh sách chứng chỉ tiếng Nhật sắp xếp tăng dần theo cấp độ (N1 -> N5).

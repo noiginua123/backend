@@ -76,7 +76,7 @@ public class EmployeeEntity implements Serializable {
     /**
      * Quyền hạn người dùng: 0 = User, 1 = Admin.
      */
-    @Column(name = "role", nullable = false)
+    @Column(name = "employee_role", nullable = false)
     private Integer role = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)

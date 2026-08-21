@@ -59,7 +59,7 @@ public class EmployeeCertificationEntity implements Serializable {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    @Column(name = "score", nullable = false, precision = 5, scale = 2)
+    @Column(name = "score", precision = 4, scale = 1)
     private BigDecimal score;
 
     @ManyToOne(fetch = FetchType.LAZY)

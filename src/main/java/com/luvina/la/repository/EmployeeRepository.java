@@ -7,8 +7,8 @@ package com.luvina.la.repository;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -21,7 +21,7 @@ import com.luvina.la.entity.EmployeeEntity;
  * @author thanhvinh
  */
 @Repository
-public interface EmployeeRepository extends CrudRepository<EmployeeEntity, Long> {
+public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> {
 
     /**
      * Tìm kiếm nhân viên theo tên đăng nhập (login id).
@@ -48,16 +48,15 @@ public interface EmployeeRepository extends CrudRepository<EmployeeEntity, Long>
      */
     @Query(value = "SELECT COUNT(e.employee_id) "
             + "FROM employees e "
-            + "JOIN departments d ON d.department_id = e.department_id "
-            + "WHERE e.role <> 1 "
-            + "  AND (:departmentId IS NULL OR e.department_id = :departmentId) "
+            + "LEFT JOIN departments d ON d.department_id = e.department_id "
+            + "WHERE (:departmentId IS NULL OR e.department_id = :departmentId) "
             + "  AND (:employeeName IS NULL OR e.employee_name LIKE :employeeName ESCAPE '!')",
             nativeQuery = true)
     long countEmployees(@Param("employeeName") String employeeName,
                         @Param("departmentId") Long departmentId);
 
     /**
-     * Tìm kiếm và phân trang danh sách nhân viên kèm chứng chỉ cao nhất (loại trừ tài khoản admin).
+     * Tìm kiếm và phân trang danh sách nhân viên kèm chứng chỉ cao nhất (bao gồm cả tài khoản admin).
      *
      * @param employeeName Tên nhân viên cần tìm kiếm (đã escape và bọc %...%, hoặc null)
      * @param departmentId ID phòng ban cần lọc (hoặc null nếu không lọc)
@@ -79,7 +78,7 @@ public interface EmployeeRepository extends CrudRepository<EmployeeEntity, Long>
             + "  DATE_FORMAT(ec.end_date, '%Y/%m/%d') AS endDate, "
             + "  ec.score AS score "
             + "FROM employees e "
-            + "JOIN departments d ON d.department_id = e.department_id "
+            + "LEFT JOIN departments d ON d.department_id = e.department_id "
             + "LEFT JOIN employees_certifications ec ON ec.employee_certification_id = ( "
             + "  SELECT ec2.employee_certification_id "
             + "  FROM employees_certifications ec2 "
@@ -89,8 +88,7 @@ public interface EmployeeRepository extends CrudRepository<EmployeeEntity, Long>
             + "  LIMIT 1 "
             + ") "
             + "LEFT JOIN certifications c ON c.certification_id = ec.certification_id "
-            + "WHERE e.role <> 1 "
-            + "  AND (:departmentId IS NULL OR e.department_id = :departmentId) "
+            + "WHERE (:departmentId IS NULL OR e.department_id = :departmentId) "
             + "  AND (:employeeName IS NULL OR e.employee_name LIKE :employeeName ESCAPE '!') "
             + "ORDER BY "
             + "  CASE WHEN :ordEmployeeName = 'ASC'  THEN e.employee_name END ASC, "

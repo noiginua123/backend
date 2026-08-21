@@ -1,5 +1,5 @@
 /**
- * Copyright(C) 2026  Luvina Software Company
+ * Copyright(C) 2026 Luvina Software Company
  *
  * DepartmentServiceImpl.java, 17/08/2026 thanhvinh
  */
@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.luvina.la.constant.Constants;
 import com.luvina.la.dto.DepartmentDTO;
@@ -20,11 +21,12 @@ import com.luvina.la.repository.DepartmentRepository;
 import com.luvina.la.service.DepartmentService;
 
 /**
- * Hiện thực nghiệp vụ lấy danh sách phòng ban.
+ * Hiện thực các nghiệp vụ liên quan đến phòng ban.
  *
  * @author thanhvinh
  */
 @Service
+@Transactional(readOnly = true)
 public class DepartmentServiceImpl implements DepartmentService {
 
     @Autowired
@@ -34,23 +36,21 @@ public class DepartmentServiceImpl implements DepartmentService {
     private DepartmentMapper departmentMapper;
 
     /**
-     * Lấy toàn bộ phòng ban từ DB, map sang DTO và tạo response code = 200.
+     * Lấy danh sách tất cả phòng ban, sắp xếp theo ID tăng dần và chuyển đổi sang DTO.
      *
-     * @return ListDepartmentResponse dữ liệu phòng ban.
+     * @return ListDepartmentResponse chứa mã thành công 200 và danh sách phòng ban
      */
     @Override
     public ListDepartmentResponse getListDepartments() {
-        // if (true) {
-        //     throw new RuntimeException("Test ER023");
-        // }
-        List<DepartmentEntity> entities = departmentRepository.findAll();
+        // 1. Lấy danh sách phòng ban từ cơ sở dữ liệu sắp xếp theo ID tăng dần
+        List<DepartmentEntity> entities = departmentRepository.findAllByOrderByDepartmentIdAsc();
+
+        // 2. Chuyển đổi danh sách Entity sang danh sách DTO
         List<DepartmentDTO> departments = entities.stream()
                 .map(departmentMapper::toDto)
                 .collect(Collectors.toList());
 
-        ListDepartmentResponse response = new ListDepartmentResponse();
-        response.setCode(Constants.CODE_SUCCESS);
-        response.setDepartments(departments);
-        return response;
+        // 3. Trả về kết quả đóng gói response
+        return new ListDepartmentResponse(Constants.CODE_SUCCESS, departments);
     }
 }

@@ -1,19 +1,63 @@
 /**
- * Copyright(C) 2026  Luvina Software Company
+ * Copyright(C) 2026 Luvina Software Company
  *
- * Constants.java, 17/08/2026 thanhvinh
+ * Constants.java, 16/08/2026 thanhvinh
  */
 package com.luvina.la.constant;
 
 /**
- * Khai báo các hằng số dùng chung.
+ * Lớp định nghĩa các hằng số dùng chung trong toàn bộ hệ thống.
  *
  * @author thanhvinh
  */
-public class Constants {
+public final class Constants {
 
     private Constants() {
     }
+
+    /** Profile môi trường phát triển (Dev). */
+    public static final String SPRING_PROFILE_DEVELOPMENT = "dev";
+
+    /** Profile môi trường production (Prod). */
+    public static final String SPRING_PROFILE_PRODUCTION = "prod";
+
+    /** Cho phép CORS cross-origin. */
+    public static final boolean IS_CROSS_ALLOW = true;
+
+    /** Khóa bí mật JWT. */
+    public static final String JWT_SECRET = "Luvina-Academe";
+
+    /** Thời hạn token JWT (7 ngày tính bằng giây). */
+    public static final long JWT_EXPIRATION = 160 * 60 * 60;
+
+    /** Danh sách các endpoints công khai không cần xác thực. */
+    public static final String[] ENDPOINTS_PUBLIC = new String[] {
+            "/",
+            "/login/**",
+            "/error/**"
+    };
+
+    /** Danh sách các endpoints yêu cầu quyền hạn người dùng. */
+    public static final String[] ENDPOINTS_WITH_ROLE = new String[] {
+            "/user/**",
+            "/employee/**",
+            "/employees/**",
+            "/employees",
+            "/department/**",
+            "/certification/**"
+    };
+
+    /** Danh sách các thuộc tính của Employee được đóng gói vào claims của JWT Token. */
+    public static final String[] ATTRIBUTIES_TO_TOKEN = new String[] {
+            "employeeId",
+            "departmentId",
+            "employeeName",
+            "employeeNameKana",
+            "employeeLoginId",
+            "employeeEmail",
+            "employeeTelephone",
+            "role"
+    };
 
     /** Code trả về khi thành công. */
     public static final Long CODE_SUCCESS = 200L;
@@ -30,4 +74,3 @@ public class Constants {
     /** Mã lỗi hệ thống. */
     public static final String ER023 = "ER023";
 }
-
