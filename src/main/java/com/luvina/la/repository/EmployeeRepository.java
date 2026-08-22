@@ -41,11 +41,12 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
     Optional<EmployeeEntity> findByEmployeeId(Long employeeId);
 
     /**
-     * Đếm tổng số nhân viên, bao gồm cả admin, dùng cho phân trang của ADM002.
+     * Đếm tổng số nhân viên (loại trừ tài khoản admin) dùng cho phân trang của ADM002.
      *
      * Query áp dụng lần lượt các điều kiện:
-     * 1. Lọc phòng ban khi departmentId khác null.
-     * 2. Tìm gần đúng tên khi employeeName khác null. Giá trị employeeName đã
+     * 1. Loại trừ tài khoản quản trị viên (employee_login_id = 'admin').
+     * 2. Lọc phòng ban khi departmentId khác null.
+     * 3. Tìm gần đúng tên khi employeeName khác null. Giá trị employeeName đã
      *    được Validator escape và bao quanh bởi ký tự phần trăm.
      *
      * Các điều kiện này phải giống điều kiện WHERE của searchEmployees để
@@ -53,26 +54,27 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
      *
      * @param employeeName Mẫu LIKE đã được escape, hoặc null nếu không tìm theo tên
      * @param departmentId ID phòng ban, hoặc null nếu lấy tất cả phòng ban
-     * @return Tổng số nhân viên, bao gồm admin, thỏa mãn điều kiện tìm kiếm
+     * @return Tổng số nhân viên thỏa mãn điều kiện tìm kiếm (không bao gồm admin)
      */
     @Query(value = """
             SELECT COUNT(e.employee_id)
             FROM employees e
-            WHERE (:departmentId IS NULL OR e.department_id = :departmentId)
+            WHERE e.employee_login_id != 'admin'
+              AND (:departmentId IS NULL OR e.department_id = :departmentId)
               AND (:employeeName IS NULL OR e.employee_name LIKE :employeeName ESCAPE '!')
             """, nativeQuery = true)
     long countEmployees(@Param("employeeName") String employeeName,
                         @Param("departmentId") Long departmentId);
 
     /**
-     * Lấy danh sách nhân viên, bao gồm admin, theo điều kiện tìm kiếm và phân trang.
+     * Lấy danh sách nhân viên (loại trừ tài khoản admin) theo điều kiện tìm kiếm và phân trang.
      *
      * Luồng xử lý của native query:
-     * 1. Lấy thông tin cơ bản từ employees và departments.
+     * 1. Lấy thông tin cơ bản từ employees và departments (loại bỏ admin).
      * 2. Subquery trong LEFT JOIN chỉ chọn một chứng chỉ cao nhất của mỗi nhân viên.
      *    Cấp có certification_level nhỏ hơn được ưu tiên; nếu cùng cấp thì chọn
      *    end_date mới hơn, sau đó chọn employee_certification_id lớn hơn.
-     * 3. Áp dụng điều kiện phòng ban và tên giống query count, không lọc role.
+     * 3. Áp dụng điều kiện phòng ban và tên giống query count.
      * 4. CASE WHEN chỉ kích hoạt cột sort được frontend truyền ASC hoặc DESC.
      * 5. employee_id ASC là điều kiện sort cuối để kết quả luôn ổn định.
      * 6. LIMIT/OFFSET lấy đúng số bản ghi của trang hiện tại.
@@ -85,6 +87,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
      * @param ordEmployeeName ASC/DESC để sort tên, hoặc chuỗi rỗng nếu không sort
      * @param ordCertificationName ASC/DESC để sort chứng chỉ, hoặc chuỗi rỗng
      * @param ordEndDate ASC/DESC để sort ngày hết hạn, hoặc chuỗi rỗng
+     * @param prioritySort Cột ưu tiên làm tiêu chí sort chính (employeeName / certificationName / endDate)
      * @param limit Số bản ghi tối đa cần lấy
      * @param offset Vị trí bản ghi bắt đầu lấy
      * @return Danh sách projection, mỗi phần tử tương ứng một nhân viên
@@ -119,21 +122,25 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
                 )
             LEFT JOIN certifications c
                 ON c.certification_id = ec.certification_id
-            WHERE (:departmentId IS NULL OR e.department_id = :departmentId)
+            WHERE e.employee_login_id != 'admin'
+              AND (:departmentId IS NULL OR e.department_id = :departmentId)
               AND (:employeeName IS NULL OR e.employee_name LIKE :employeeName ESCAPE '!')
             ORDER BY
-                CASE WHEN :ordEmployeeName = 'ASC'
-                    THEN e.employee_name END ASC,
-                CASE WHEN :ordEmployeeName = 'DESC'
-                    THEN e.employee_name END DESC,
-                CASE WHEN :ordCertificationName = 'ASC'
-                    THEN c.certification_name END ASC,
-                CASE WHEN :ordCertificationName = 'DESC'
-                    THEN c.certification_name END DESC,
-                CASE WHEN :ordEndDate = 'ASC'
-                    THEN ec.end_date END ASC,
-                CASE WHEN :ordEndDate = 'DESC'
-                    THEN ec.end_date END DESC,
+                -- (a) Cột ưu tiên sort trước theo chiều được chọn
+                CASE WHEN :prioritySort = 'employeeName'      AND :ordEmployeeName      = 'ASC'  THEN e.employee_name      END ASC,
+                CASE WHEN :prioritySort = 'employeeName'      AND :ordEmployeeName      = 'DESC' THEN e.employee_name      END DESC,
+                CASE WHEN :prioritySort = 'certificationName' AND :ordCertificationName = 'ASC'  THEN c.certification_name END ASC,
+                CASE WHEN :prioritySort = 'certificationName' AND :ordCertificationName = 'DESC' THEN c.certification_name END DESC,
+                CASE WHEN :prioritySort = 'endDate'           AND :ordEndDate           = 'ASC'  THEN ec.end_date          END ASC,
+                CASE WHEN :prioritySort = 'endDate'           AND :ordEndDate           = 'DESC' THEN ec.end_date          END DESC,
+                -- (b) 3 cột sort phụ theo THỨ TỰ cố định name -> cert -> endDate, theo CHIỀU đang lưu của từng cột
+                CASE WHEN :ordEmployeeName      = 'ASC'  THEN e.employee_name      END ASC,
+                CASE WHEN :ordEmployeeName      = 'DESC' THEN e.employee_name      END DESC,
+                CASE WHEN :ordCertificationName = 'ASC'  THEN c.certification_name END ASC,
+                CASE WHEN :ordCertificationName = 'DESC' THEN c.certification_name END DESC,
+                CASE WHEN :ordEndDate           = 'ASC'  THEN ec.end_date          END ASC,
+                CASE WHEN :ordEndDate           = 'DESC' THEN ec.end_date          END DESC,
+                -- (c) Tie-breaker cuối
                 e.employee_id ASC
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
@@ -143,6 +150,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
             @Param("ordEmployeeName") String ordEmployeeName,
             @Param("ordCertificationName") String ordCertificationName,
             @Param("ordEndDate") String ordEndDate,
+            @Param("prioritySort") String prioritySort,
             @Param("limit") int limit,
             @Param("offset") int offset
     );

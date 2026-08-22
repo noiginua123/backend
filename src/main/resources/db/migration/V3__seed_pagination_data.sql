@@ -1,0 +1,77 @@
+-- ============================================================
+-- V3__seed_pagination_data.sql
+-- SEED 40 EMPLOYEES & CERTIFICATIONS FOR PAGINATION TESTING (ADM002)
+-- ============================================================
+
+-- 1. THÊM 40 NHÂN VIÊN MẪU (employees: id 12 -> 51)
+INSERT INTO `employees` (`employee_id`, `department_id`, `employee_name`, `employee_name_kana`, `employee_birth_date`, `employee_email`, `employee_telephone`, `employee_login_id`, `employee_login_password`, `employee_role`) VALUES
+(12, 1, 'Hoàng Văn An', 'ホアン ヴァン アン', '1993-01-15', 'anhv@luvina.net', '0912345012', 'anhv', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(13, 2, 'Phan Thị Bích', 'ファン ティ ビック', '1994-03-22', 'bichpt@luvina.net', '0912345013', 'bichpt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(14, 3, 'Bùi Văn Cường', 'ブイ ヴァン クオン', '1990-08-10', 'cuongbv@luvina.net', '0912345014', 'cuongbv', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(15, 1, 'Đặng Hải Đăng', 'ダン ハイ ダン', '1995-12-05', 'dangdh@luvina.net', '0912345015', 'dangdh', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(16, 2, 'Trịnh Thu Giang', 'チン トゥ ジアン', '1996-04-18', 'giangtt@luvina.net', '0912345016', 'giangtt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(17, 3, 'Ngô Văn Hải', 'ゴー ヴァン ハイ', '1988-09-30', 'hainv@luvina.net', '0912345017', 'hainv', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(18, 1, 'Dương Thị Hạnh', 'ズオン ティ ハイン', '1997-02-14', 'hanhdt@luvina.net', '0912345018', 'hanhdt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(19, 2, 'Vũ Quốc Hưng', 'ヴー クオック フン', '1992-11-28', 'hungvq@luvina.net', '0912345019', 'hungvq', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(20, 3, 'Lý Khánh Huyền', 'リー カイン フエン', '1998-06-03', 'huyenlk@luvina.net', '0912345020', 'huyenlk', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(21, 1, 'Mai Tuấn Kiên', 'マイ トゥアン キエン', '1991-05-19', 'kienmt@luvina.net', '0912345021', 'kienmt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(22, 2, 'Chu Thùy Linh', 'チュー トゥイ リン', '1999-10-12', 'linhct@luvina.net', '0912345022', 'linhct', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(23, 3, 'Hà Quang Long', 'ハー クアン ロン', '1989-07-25', 'longhq@luvina.net', '0912345023', 'longhq', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(24, 1, 'Tạ Thị Minh', 'ター ティ ミン', '1996-01-08', 'minhtt@luvina.net', '0912345024', 'minhtt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(25, 2, 'Đinh Trọng Nam', 'ディン チョン ナム', '1993-09-17', 'namdt@luvina.net', '0912345025', 'namdt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(26, 3, 'Cao Thị Nga', 'カオ ティ ガ', '1995-03-31', 'ngact@luvina.net', '0912345026', 'ngact', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(27, 1, 'Lâm Hoàng Phúc', 'ラム ホアン フック', '1990-12-20', 'phuclh@luvina.net', '0912345027', 'phuclh', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(28, 2, 'Hồ Thị Quỳnh', 'ホー ティ クイン', '1997-08-14', 'quynhht@luvina.net', '0912345028', 'quynhht', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(29, 3, 'Đoàn Thái Sơn', 'ドアン タイ ソン', '1992-04-05', 'sondt@luvina.net', '0912345029', 'sondt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(30, 1, 'Lương Minh Tâm', 'ルオン ミン タム', '1994-11-11', 'tamlm@luvina.net', '0912345030', 'tamlm', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(31, 2, 'Tạ Đức Thắng', 'ター ドゥック タン', '1987-06-24', 'thangtd@luvina.net', '0912345031', 'thangtd', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(32, 3, 'Nghiêm Phương Thảo', 'ギエム フオン タオ', '1998-02-17', 'thaonp@luvina.net', '0912345032', 'thaonp', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(33, 1, 'Huỳnh Ngọc Thịnh', 'フイン ゴック ティン', '1993-10-09', 'thinhhn@luvina.net', '0912345033', 'thinhhn', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(34, 2, 'Trương Cẩm Tú', 'チュオン カム トゥー', '1996-05-23', 'tutc@luvina.net', '0912345034', 'tutc', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(35, 3, 'Võ Hoàng Việt', 'ボー ホアン ヴィエット', '1991-08-15', 'vietvh@luvina.net', '0912345035', 'vietvh', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(36, 1, 'Bạch Mỹ Uyên', 'バク ミー ウイエン', '1999-12-01', 'uyenbm@luvina.net', '0912345036', 'uyenbm', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(37, 2, 'Quách Tuấn Anh', 'クアック トゥアン アイン', '1995-07-19', 'anhqt@luvina.net', '0912345037', 'anhqt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(38, 3, 'Tiêu Hải Bình', 'ティエウ ハイ ビン', '1990-03-04', 'binhth@luvina.net', '0912345038', 'binhth', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(39, 1, 'Nông Thị Cúc', 'ノン ティ クック', '1997-09-27', 'cucnt@luvina.net', '0912345039', 'cucnt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(40, 2, 'Triệu Quốc Dũng', 'チエウ クオック ズン', '1992-01-30', 'dungtq@luvina.net', '0912345040', 'dungtq', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(41, 3, 'Khổng Thị Hoa', 'コン ティ ホア', '1994-06-16', 'hoakt@luvina.net', '0912345041', 'hoakt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(42, 1, 'Mạc Đình Khoa', 'マク ディン コア', '1988-10-02', 'khoamd@luvina.net', '0912345042', 'khoamd', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(43, 2, 'Giáp Thị Lan', 'ザップ ティ ラン', '1996-12-14', 'langt@luvina.net', '0912345043', 'langt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(44, 3, 'Uông Thế Long', 'ウオン テー ロン', '1993-04-26', 'longut@luvina.net', '0912345044', 'longut', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(45, 1, 'La Thị Mơ', 'ラー ティ モー', '1998-08-08', 'molt@luvina.net', '0912345045', 'molt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(46, 2, 'Sầm Đức Nam', 'サム ドゥック ナム', '1991-02-21', 'namsd@luvina.net', '0912345046', 'namsd', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(47, 3, 'Ninh Thị Nhung', 'ニン ティ ニュン', '1995-11-03', 'nhungnt@luvina.net', '0912345047', 'nhungnt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(48, 1, 'Ôn Gia Phú', 'オン ザー フー', '1990-07-17', 'phuog@luvina.net', '0912345048', 'phuog', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(49, 2, 'Thiều Thị Sen', 'ティエウ ティ セン', '1997-05-29', 'sentt@luvina.net', '0912345049', 'sentt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(50, 3, 'Đới Văn Thành', 'ドイ ヴァン タイン', '1992-10-10', 'thanhvd@luvina.net', '0912345050', 'thanhvd', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0),
+(51, 1, 'Vi Thị Xuân', 'ヴィー ティ スアン', '1999-03-05', 'xuanvt@luvina.net', '0912345051', 'xuanvt', '$2a$10$r.XIN4K9vTioiuYQwaTop.UVQ5r5FvrKk2V5Orm9Hc6n4i9Tvjthy', 0)
+ON DUPLICATE KEY UPDATE `employee_name` = VALUES(`employee_name`);
+
+-- 2. THÊM CHỨNG CHỈ CHO MỘT SỐ NHÂN VIÊN MỚI (employees_certifications: id 11 -> 35)
+INSERT INTO `employees_certifications` (`employee_certification_id`, `employee_id`, `certification_id`, `start_date`, `end_date`, `score`) VALUES
+(11, 12, 1, '2023-01-01', '2027-01-01', 165.0),
+(12, 13, 2, '2022-06-01', '2026-06-01', 150.0),
+(13, 14, 3, '2021-03-15', '2025-03-15', 140.0),
+(14, 15, 4, '2020-07-01', '2024-07-01', 130.0),
+(15, 16, 1, '2024-01-10', '2028-01-10', 175.0),
+(16, 17, 2, '2022-12-01', '2026-12-01', 155.0),
+(17, 18, 5, '2021-08-20', '2025-08-20', 120.0),
+(18, 20, 3, '2023-04-01', '2027-04-01', 145.0),
+(19, 21, 2, '2020-11-15', '2024-11-15', 160.0),
+(20, 23, 1, '2021-05-01', '2025-05-01', 170.0),
+(21, 25, 4, '2022-09-01', '2026-09-01', 135.0),
+(22, 27, 3, '2020-02-10', '2024-02-10', 142.0),
+(23, 28, 2, '2023-08-01', '2027-08-01', 158.0),
+(24, 30, 1, '2022-04-15', '2026-04-15', 168.0),
+(25, 32, 3, '2021-10-20', '2025-10-20', 148.0),
+(26, 34, 2, '2024-02-01', '2028-02-01', 162.0),
+(27, 36, 4, '2023-06-15', '2027-06-15', 138.0),
+(28, 38, 1, '2020-09-01', '2024-09-01', 172.0),
+(29, 40, 2, '2021-11-01', '2025-11-01', 152.0),
+(30, 42, 3, '2022-03-01', '2026-03-01', 144.0),
+(31, 44, 1, '2023-10-01', '2027-10-01', 180.0),
+(32, 46, 2, '2020-05-15', '2024-05-15', 156.0),
+(33, 48, 4, '2021-07-20', '2025-07-20', 128.0),
+(34, 50, 3, '2024-01-01', '2028-01-01', 146.0),
+(35, 51, 2, '2023-11-15', '2027-11-15', 164.0)
+ON DUPLICATE KEY UPDATE `score` = VALUES(`score`);

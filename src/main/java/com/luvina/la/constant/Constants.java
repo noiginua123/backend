@@ -41,10 +41,15 @@ public final class Constants {
     public static final String[] ENDPOINTS_WITH_ROLE = new String[] {
             "/user/**",
             "/employee/**",
+            "/employee",
             "/employees/**",
             "/employees",
             "/department/**",
-            "/certification/**"
+            "/department",
+            "/departments/**",
+            "/departments",
+            "/certification/**",
+            "/certifications/**"
     };
 
     /** Danh sách các thuộc tính của Employee được đóng gói vào claims của JWT Token. */

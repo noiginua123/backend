@@ -72,6 +72,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                                                 String ordEmployeeName,
                                                 String ordCertificationName,
                                                 String ordEndDate,
+                                                String prioritySort,
                                                 String offset,
                                                 String limit) {
         // Bước 1: Chặn giá trị sort khác rỗng, ASC hoặc DESC trước khi gọi database.
@@ -95,6 +96,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             String safeOrdEmployeeName = normalizeSortOrder(ordEmployeeName);
             String safeOrdCertificationName = normalizeSortOrder(ordCertificationName);
             String safeOrdEndDate = normalizeSortOrder(ordEndDate);
+            String safePrioritySort = normalizePrioritySort(prioritySort);
 
             List<EmployeeListItemProjection> projections = employeeRepository.searchEmployees(
                     escapedEmployeeName,
@@ -102,6 +104,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     safeOrdEmployeeName,
                     safeOrdCertificationName,
                     safeOrdEndDate,
+                    safePrioritySort,
                     parsedLimit,
                     parsedOffset
             );
@@ -109,6 +112,24 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         return new ListEmployeeResponse(Constants.CODE_SUCCESS, totalRecords, employees);
+    }
+
+    /**
+     * Chuẩn hóa cột ưu tiên sắp xếp động. Chỉ chấp nhận employeeName, certificationName, endDate.
+     * Mặc định là employeeName nếu null hoặc không hợp lệ.
+     *
+     * @param prioritySort Tên cột ưu tiên đầu vào
+     * @return Tên cột ưu tiên hợp lệ
+     */
+    private String normalizePrioritySort(String prioritySort) {
+        if (prioritySort == null) {
+            return "employeeName";
+        }
+        String trimmed = prioritySort.trim();
+        if ("certificationName".equals(trimmed) || "endDate".equals(trimmed)) {
+            return trimmed;
+        }
+        return "employeeName";
     }
 
     /**

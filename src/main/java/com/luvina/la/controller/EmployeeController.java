@@ -21,7 +21,7 @@ import com.luvina.la.service.EmployeeService;
  * @author thanhvinh
  */
 @RestController
-@RequestMapping("/employees")
+@RequestMapping({"/employee", "/employees"})
 public class EmployeeController {
 
     @Autowired
@@ -46,6 +46,7 @@ public class EmployeeController {
             @RequestParam(name = "ord_employee_name", required = false, defaultValue = "") String ordEmployeeName,
             @RequestParam(name = "ord_certification_name", required = false, defaultValue = "") String ordCertificationName,
             @RequestParam(name = "ord_end_date", required = false, defaultValue = "") String ordEndDate,
+            @RequestParam(name = "priority_sort", required = false, defaultValue = "employeeName") String prioritySort,
             @RequestParam(name = "offset", required = false, defaultValue = "") String offset,
             @RequestParam(name = "limit", required = false, defaultValue = "") String limit) {
         ListEmployeeResponse response = employeeService.searchEmployees(
@@ -54,6 +55,7 @@ public class EmployeeController {
                 ordEmployeeName,
                 ordCertificationName,
                 ordEndDate,
+                prioritySort,
                 offset,
                 limit
         );

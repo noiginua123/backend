@@ -24,16 +24,18 @@ public interface EmployeeService {
      * @param ordEmployeeName ASC/DESC để sort tên, hoặc chuỗi rỗng
      * @param ordCertificationName ASC/DESC để sort chứng chỉ, hoặc chuỗi rỗng
      * @param ordEndDate ASC/DESC để sort ngày hết hạn, hoặc chuỗi rỗng
+     * @param prioritySort Cột ưu tiên làm tiêu chí sort chính (employeeName / certificationName / endDate)
      * @param offset Vị trí bản ghi bắt đầu, phải là số nguyên không âm
      * @param limit Số bản ghi tối đa, phải là số nguyên dương
      * @return Response chứa code thành công, tổng số bản ghi và danh sách nhân viên
      * @throws AppException Khi sort, offset, limit, departmentId hoặc employeeName không hợp lệ
      */
     ListEmployeeResponse searchEmployees(String employeeName,
-                                        String departmentId,
-                                        String ordEmployeeName,
-                                        String ordCertificationName,
-                                        String ordEndDate,
-                                        String offset,
-                                        String limit);
+                                         String departmentId,
+                                         String ordEmployeeName,
+                                         String ordCertificationName,
+                                         String ordEndDate,
+                                         String prioritySort,
+                                         String offset,
+                                         String limit);
 }

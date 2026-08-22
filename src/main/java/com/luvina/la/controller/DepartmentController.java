@@ -20,7 +20,7 @@ import com.luvina.la.service.DepartmentService;
  * @author thanhvinh
  */
 @RestController
-@RequestMapping("/departments")
+@RequestMapping({"/department", "/departments"})
 public class DepartmentController {
 
     @Autowired
