@@ -8,9 +8,11 @@ CREATE TABLE IF NOT EXISTS `departments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `departments` (`department_id`, `department_name`) VALUES
-(1, 'Phòng phát triển số 1'),
-(2, 'Phòng phát triển số 2'),
-(3, 'Phòng QA');
+(1, 'DEV1'),
+(2, 'DEV2'),
+(3, 'DEV3'),
+(4, 'DEV4'),
+(5, 'DEV5');
 
 -- ============================================================
 -- 2. BẢNG NHÂN VIÊN (employees)

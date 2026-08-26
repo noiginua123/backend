@@ -3,11 +3,10 @@
 -- SEED FULL & COMPREHENSIVE DATA (ALL 141 EMPLOYEES WITH FULL CERTIFICATIONS, MULTI-TIER SORT TEST CASES)
 -- ============================================================
 
--- 1. BỔ SUNG THÊM PHÒNG BAN ĐA DẠNG (departments: id 4 -> 6)
+-- 1. BỔ SUNG THÊM PHÒNG BAN ĐA DẠNG (departments: id 4 -> 5)
 INSERT INTO `departments` (`department_id`, `department_name`) VALUES
-(4, 'Phòng QAT'),
-(5, 'Phòng Đào tạo (Training)'),
-(6, 'Phòng Nhân sự (HR)')
+(4, 'DEV4'),
+(5, 'DEV5')
 ON DUPLICATE KEY UPDATE `department_name` = VALUES(`department_name`);
 
 -- 2. CẬP NHẬT CÁC NHÓM TRÙNG TÊN ĐỂ TEST SORT ĐA TẦNG (Tên -> Chứng chỉ -> Ngày hết hạn -> ID)
@@ -23,7 +22,7 @@ UPDATE `employees` SET `employee_name` = 'Lê Hoàng Long', `employee_name_kana`
 -- Phân bổ phòng ban mới cho một số nhân viên để test filter dropdown
 UPDATE `employees` SET `department_id` = 4 WHERE `employee_id` BETWEEN 52 AND 80;
 UPDATE `employees` SET `department_id` = 5 WHERE `employee_id` BETWEEN 81 AND 110;
-UPDATE `employees` SET `department_id` = 6 WHERE `employee_id` BETWEEN 111 AND 141;
+UPDATE `employees` SET `department_id` = 5 WHERE `employee_id` BETWEEN 111 AND 141;
 
 -- 3. ĐẢM BẢO TẤT CẢ 141 NHÂN VIÊN ĐỀU CÓ CHỨNG CHỈ ĐẦY ĐỦ (employees_certifications: id 96 -> 250)
 -- Bổ sung chứng chỉ cho các nhân viên còn thiếu (từ 1 -> 141)
