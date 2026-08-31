@@ -21,6 +21,19 @@ import com.luvina.la.exception.AppException;
 @Component
 public class EmployeeValidator {
 
+    private static final int MAX_DEPARTMENT_ID_DIGITS = 18;
+
+    private final CommonValidator commonValidator;
+
+    /**
+     * Khởi tạo validator nhân viên với các phép kiểm tra dùng chung.
+     *
+     * @param commonValidator Validator dùng chung
+     */
+    public EmployeeValidator(CommonValidator commonValidator) {
+        this.commonValidator = commonValidator;
+    }
+
     /**
      * Kiểm tra hướng sắp xếp, chỉ chấp nhận rỗng, ASC hoặc DESC.
      *
@@ -28,7 +41,7 @@ public class EmployeeValidator {
      * @throws AppException Khi hướng sắp xếp không hợp lệ
      */
     public void validateSortOrder(String order) {
-        if (order != null && !order.trim().isEmpty()) {
+        if (!commonValidator.isEmpty(order)) {
             String trimmedOrder = order.trim();
             if (!SortOrder.isSupported(trimmedOrder)) {
                 throw new AppException(Constants.ER021);
@@ -44,7 +57,7 @@ public class EmployeeValidator {
      * @throws AppException Khi offset không phải số nguyên không âm
      */
     public int validateAndParseOffset(String offset) {
-        return parseUnsignedInt(
+        return commonValidator.parseUnsignedInt(
                 offset,
                 Constants.DEFAULT_EMPLOYEE_OFFSET,
                 true,
@@ -60,7 +73,7 @@ public class EmployeeValidator {
      * @throws AppException Khi limit không phải số nguyên dương
      */
     public int validateAndParseLimit(String limit) {
-        return parseUnsignedInt(
+        return commonValidator.parseUnsignedInt(
                 limit,
                 Constants.DEFAULT_EMPLOYEE_PAGE_SIZE,
                 false,
@@ -76,12 +89,15 @@ public class EmployeeValidator {
      * @throws AppException Khi ID phòng ban không hợp lệ
      */
     public Long parseDepartmentId(String departmentId) {
-        if (departmentId == null || departmentId.trim().isEmpty()) {
+        if (commonValidator.isEmpty(departmentId)) {
             return null;
         }
 
         String trimmedDepartmentId = departmentId.trim();
-        if (!trimmedDepartmentId.matches("^[0-9]{1,18}$")) {
+        if (!commonValidator.isHalfWidthNumber(
+                trimmedDepartmentId,
+                MAX_DEPARTMENT_ID_DIGITS
+        )) {
             throw new AppException(
                     Constants.ER018,
                     List.of(Constants.FIELD_LABEL_DEPARTMENT_ID)
@@ -118,7 +134,7 @@ public class EmployeeValidator {
             );
         }
 
-        if (employeeName.trim().isEmpty()) {
+        if (commonValidator.isEmpty(employeeName)) {
             return null;
         }
 
@@ -129,33 +145,4 @@ public class EmployeeValidator {
         return "%" + escapedEmployeeName + "%";
     }
 
-    /**
-     * Chuyển chuỗi số nguyên không âm sang int.
-     *
-     * @param raw Giá trị đầu vào
-     * @param defaultValue Giá trị mặc định
-     * @param allowZero Có cho phép giá trị 0 hay không
-     * @param fieldLabel Nhãn trường dùng trong message
-     * @return Giá trị số nguyên hợp lệ
-     * @throws AppException Khi giá trị không hợp lệ
-     */
-    private int parseUnsignedInt(String raw,
-                                 int defaultValue,
-                                 boolean allowZero,
-                                 String fieldLabel) {
-        if (raw == null || raw.trim().isEmpty()) {
-            return defaultValue;
-        }
-
-        String trimmedValue = raw.trim();
-        if (!trimmedValue.matches("^[0-9]{1,9}$")) {
-            throw new AppException(Constants.ER018, List.of(fieldLabel));
-        }
-
-        int parsedValue = Integer.parseInt(trimmedValue);
-        if (!allowZero && parsedValue == 0) {
-            throw new AppException(Constants.ER018, List.of(fieldLabel));
-        }
-        return parsedValue;
-    }
 }

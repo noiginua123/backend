@@ -24,6 +24,7 @@ import com.luvina.la.constant.SortOrder;
 import com.luvina.la.payload.request.EmployeeSearchRequest;
 import com.luvina.la.repository.EmployeeRepository;
 import com.luvina.la.validator.EmployeeValidator;
+import com.luvina.la.validator.CommonValidator;
 
 /**
  * Kiểm thử quy tắc chuẩn hóa tham số sắp xếp của ADM002.
@@ -46,7 +47,7 @@ class EmployeeServiceImplTest {
         employeeService = new EmployeeServiceImpl(
                 employeeRepository,
                 employeeMapper,
-                new EmployeeValidator()
+                new EmployeeValidator(new CommonValidator())
         );
         when(employeeRepository.countEmployees(any(), any(), anyString())).thenReturn(1L);
         when(employeeRepository.searchEmployees(
