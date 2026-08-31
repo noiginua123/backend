@@ -16,7 +16,6 @@ import com.luvina.la.constant.Constants;
 import com.luvina.la.constant.SortField;
 import com.luvina.la.constant.SortOrder;
 import com.luvina.la.dto.EmployeeListDTO;
-import com.luvina.la.dto.EmployeeListItemProjection;
 import com.luvina.la.dto.EmployeeSearchCriteria;
 import com.luvina.la.exception.AppException;
 import com.luvina.la.mapper.EmployeeMapper;
@@ -135,7 +134,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             return Collections.emptyList();
         }
 
-        List<EmployeeListItemProjection> projections = employeeRepository.searchEmployees(
+        List<Object[]> rows = employeeRepository.searchEmployees(
                 criteria.getEmployeeName(),
                 criteria.getDepartmentId(),
                 criteria.getOrdEmployeeName(),
@@ -146,7 +145,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 criteria.getLimit(),
                 criteria.getOffset()
         );
-        return mapToEmployeeDTOs(projections);
+        return mapToEmployeeDTOs(rows);
     }
 
     /**
@@ -187,14 +186,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     /**
-     * Chuyển danh sách projection từ Repository sang DTO trả về cho frontend.
+     * Chuyển danh sách mảng cột từ Repository sang DTO trả về cho frontend.
      *
-     * @param projections Danh sách kết quả native query
+     * @param rows Danh sách kết quả native query
      * @return Danh sách DTO nhân viên
      */
     private List<EmployeeListDTO> mapToEmployeeDTOs(
-            List<EmployeeListItemProjection> projections) {
-        return projections.stream()
+            List<Object[]> rows) {
+        return rows.stream()
                 .map(employeeMapper::toDTO)
                 .collect(Collectors.toList());
     }

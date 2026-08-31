@@ -13,7 +13,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.luvina.la.dto.EmployeeListItemProjection;
 import com.luvina.la.entity.EmployeeEntity;
 
 /**
@@ -81,7 +80,10 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
      * 5. employee_id ASC là điều kiện sort cuối để kết quả luôn ổn định.
      * 6. LIMIT/OFFSET lấy đúng số bản ghi của trang hiện tại.
      *
-     * Mỗi alias trong SELECT phải khớp với getter của EmployeeListItemProjection.
+     * THỨ TỰ cột SELECT phải khớp chính xác với EmployeeListDTO và EmployeeMapper:
+     * employeeId, employeeName, employeeBirthDate, departmentName, employeeEmail,
+     * employeeTelephone, certificationName, endDate, score, role. Khi đổi hoặc thêm
+     * cột SELECT, bắt buộc sửa các chỉ số tương ứng trong EmployeeMapper.
      * Không join trực tiếp toàn bộ chứng chỉ vì một nhân viên có thể bị trả thành nhiều dòng.
      *
      * @param employeeName Mẫu LIKE đã được escape, hoặc null nếu không tìm theo tên
@@ -93,7 +95,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
      * @param adminLoginId Tên đăng nhập admin cần loại trừ
      * @param limit Số bản ghi tối đa cần lấy
      * @param offset Vị trí bản ghi bắt đầu lấy
-     * @return Danh sách projection, mỗi phần tử tương ứng một nhân viên
+     * @return Danh sách mảng cột, mỗi phần tử tương ứng một nhân viên
      */
     @Query(value = """
             SELECT
@@ -147,7 +149,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
                 e.employee_id ASC
             LIMIT :limit OFFSET :offset
             """, nativeQuery = true)
-    List<EmployeeListItemProjection> searchEmployees(
+    List<Object[]> searchEmployees(
             @Param("employeeName") String employeeName,
             @Param("departmentId") Long departmentId,
             @Param("ordEmployeeName") String ordEmployeeName,
