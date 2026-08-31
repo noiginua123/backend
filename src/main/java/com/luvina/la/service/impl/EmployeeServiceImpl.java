@@ -179,13 +179,17 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     /**
-     * Chuẩn hóa hướng sắp xếp thành chuỗi rỗng, ASC hoặc DESC.
+     * Chuẩn hóa hướng sắp xếp thành ASC hoặc DESC.
+     * Dùng ASC khi tham số rỗng để mọi cột luôn có thứ tự xác định.
      *
      * @param sortOrder Hướng sắp xếp đầu vào
      * @return Hướng sắp xếp đã chuẩn hóa
      */
     private String normalizeSortOrder(String sortOrder) {
-        return sortOrder != null ? sortOrder.trim() : "";
+        if (sortOrder == null || sortOrder.trim().isEmpty()) {
+            return "ASC";
+        }
+        return sortOrder.trim();
     }
 
     /**
