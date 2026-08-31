@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.luvina.la.constant.Constants;
 import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.dto.EmployeeListItemProjection;
+import com.luvina.la.dto.EmployeeSearchCriteria;
 import com.luvina.la.exception.AppException;
 import com.luvina.la.mapper.EmployeeMapper;
 import com.luvina.la.payload.request.EmployeeSearchRequest;
@@ -63,47 +64,85 @@ public class EmployeeServiceImpl implements EmployeeService {
      */
     @Override
     public ListEmployeeResponse searchEmployees(EmployeeSearchRequest request) {
-        // Bước 1: Chặn giá trị sort khác rỗng, ASC hoặc DESC trước khi gọi database.
+        validate(request);
+        EmployeeSearchCriteria criteria = buildCriteria(request);
+        long totalRecords = countEmployees(criteria);
+        List<EmployeeListDTO> employees = fetchAndMap(criteria, totalRecords);
+        return new ListEmployeeResponse(Constants.CODE_SUCCESS, totalRecords, employees);
+    }
+
+    /**
+     * Kiểm tra các giá trị đầu vào của request trước khi chuẩn hóa.
+     *
+     * @param request Request tìm kiếm ADM002
+     * @throws AppException Khi một hướng sắp xếp không hợp lệ
+     */
+    private void validate(EmployeeSearchRequest request) {
         validateSortOrders(
                 request.getOrdEmployeeName(),
                 request.getOrdCertificationName(),
                 request.getOrdEndDate()
         );
+    }
 
-        // Bước 2: Chuyển các tham số dạng chuỗi thành dữ liệu an toàn cho Repository.
-        int parsedOffset = employeeValidator.validateAndParseOffset(request.getOffset());
-        int parsedLimit = employeeValidator.validateAndParseLimit(request.getLimit());
-        Long parsedDepartmentId = employeeValidator.parseDepartmentId(request.getDepartmentId());
-        String escapedEmployeeName = employeeValidator.validateAndEscapeEmployeeName(request.getEmployeeName());
-
-        // Bước 3: Đếm tổng số nhân viên theo cùng điều kiện filter của query lấy danh sách.
-        long totalRecords = employeeRepository.countEmployees(
-                escapedEmployeeName,
-                parsedDepartmentId
+    /**
+     * Chuyển request thô thành tiêu chí tìm kiếm đã validate và chuẩn hóa.
+     *
+     * @param request Request tìm kiếm ADM002
+     * @return Tiêu chí an toàn để truyền xuống Repository
+     * @throws AppException Khi offset, limit, departmentId hoặc employeeName không hợp lệ
+     */
+    private EmployeeSearchCriteria buildCriteria(EmployeeSearchRequest request) {
+        return new EmployeeSearchCriteria(
+                employeeValidator.validateAndEscapeEmployeeName(request.getEmployeeName()),
+                employeeValidator.parseDepartmentId(request.getDepartmentId()),
+                normalizeSortOrder(request.getOrdEmployeeName()),
+                normalizeSortOrder(request.getOrdCertificationName()),
+                normalizeSortOrder(request.getOrdEndDate()),
+                normalizePrioritySort(request.getPrioritySort()),
+                employeeValidator.validateAndParseOffset(request.getOffset()),
+                employeeValidator.validateAndParseLimit(request.getLimit())
         );
+    }
 
-        // Bước 4: Chỉ query danh sách khi có dữ liệu để tránh một lần truy vấn không cần thiết.
-        List<EmployeeListDTO> employees = Collections.emptyList();
-        if (totalRecords > 0) {
-            String safeOrdEmployeeName = normalizeSortOrder(request.getOrdEmployeeName());
-            String safeOrdCertificationName = normalizeSortOrder(request.getOrdCertificationName());
-            String safeOrdEndDate = normalizeSortOrder(request.getOrdEndDate());
-            String safePrioritySort = normalizePrioritySort(request.getPrioritySort());
+    /**
+     * Đếm tổng số nhân viên theo tiêu chí tìm kiếm.
+     *
+     * @param criteria Tiêu chí tìm kiếm đã chuẩn hóa
+     * @return Tổng số nhân viên thỏa mãn
+     */
+    private long countEmployees(EmployeeSearchCriteria criteria) {
+        return employeeRepository.countEmployees(
+                criteria.getEmployeeName(),
+                criteria.getDepartmentId()
+        );
+    }
 
-            List<EmployeeListItemProjection> projections = employeeRepository.searchEmployees(
-                    escapedEmployeeName,
-                    parsedDepartmentId,
-                    safeOrdEmployeeName,
-                    safeOrdCertificationName,
-                    safeOrdEndDate,
-                    safePrioritySort,
-                    parsedLimit,
-                    parsedOffset
-            );
-            employees = mapToEmployeeDTOs(projections);
+    /**
+     * Truy vấn và chuyển dữ liệu nhân viên sang DTO khi có bản ghi.
+     *
+     * @param criteria Tiêu chí tìm kiếm đã chuẩn hóa
+     * @param totalRecords Tổng số bản ghi thỏa mãn
+     * @return Danh sách DTO nhân viên, hoặc danh sách rỗng
+     */
+    private List<EmployeeListDTO> fetchAndMap(
+            EmployeeSearchCriteria criteria,
+            long totalRecords) {
+        if (totalRecords == 0) {
+            return Collections.emptyList();
         }
 
-        return new ListEmployeeResponse(Constants.CODE_SUCCESS, totalRecords, employees);
+        List<EmployeeListItemProjection> projections = employeeRepository.searchEmployees(
+                criteria.getEmployeeName(),
+                criteria.getDepartmentId(),
+                criteria.getOrdEmployeeName(),
+                criteria.getOrdCertificationName(),
+                criteria.getOrdEndDate(),
+                criteria.getPrioritySort(),
+                criteria.getLimit(),
+                criteria.getOffset()
+        );
+        return mapToEmployeeDTOs(projections);
     }
 
     /**
