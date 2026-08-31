@@ -13,18 +13,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Locale;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.support.StaticMessageSource;
 
-import com.luvina.la.mapper.EmployeeMapper;
 import com.luvina.la.constant.Constants;
 import com.luvina.la.constant.SortField;
 import com.luvina.la.constant.SortOrder;
+import com.luvina.la.mapper.EmployeeMapper;
 import com.luvina.la.payload.request.EmployeeSearchRequest;
 import com.luvina.la.repository.EmployeeRepository;
-import com.luvina.la.validator.EmployeeValidator;
 import com.luvina.la.validator.CommonValidator;
+import com.luvina.la.validator.EmployeeValidator;
 
 /**
  * Kiểm thử quy tắc chuẩn hóa tham số sắp xếp của ADM002.
@@ -47,12 +49,24 @@ class EmployeeServiceImplTest {
         employeeService = new EmployeeServiceImpl(
                 employeeRepository,
                 employeeMapper,
-                new EmployeeValidator(new CommonValidator())
+                new EmployeeValidator(new CommonValidator(), createMessageSource())
         );
         when(employeeRepository.countEmployees(any(), any(), anyString())).thenReturn(1L);
         when(employeeRepository.searchEmployees(
                 any(), any(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt()
         )).thenReturn(Collections.emptyList());
+    }
+
+    /**
+     * Tạo nguồn nhãn tối thiểu cho validator trong unit test.
+     *
+     * @return Message source chứa nhãn offset và limit
+     */
+    private StaticMessageSource createMessageSource() {
+        StaticMessageSource messageSource = new StaticMessageSource();
+        messageSource.addMessage("field.offset", Locale.getDefault(), "offset");
+        messageSource.addMessage("field.limit", Locale.getDefault(), "limit");
+        return messageSource;
     }
 
     /**

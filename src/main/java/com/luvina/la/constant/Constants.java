@@ -83,61 +83,6 @@ public final class Constants {
     public static final int DEFAULT_EMPLOYEE_PAGE_SIZE = 20;
 
     // =========================================================================
-    // Field Labels (Nhãn trường trong thông báo lỗi/thông tin)
-    // =========================================================================
-
-    /** Nhãn trường ID người dùng / nhân viên. */
-    public static final String FIELD_LABEL_ID = "ＩＤ";
-
-    /** Nhãn trường tên đăng nhập / account. */
-    public static final String FIELD_LABEL_LOGIN_ID = "アカウント名";
-
-    /** Nhãn trường họ tên dùng trong tham số message. */
-    public static final String FIELD_LABEL_FULLNAME = "氏名";
-
-    /** Nhãn trường họ tên Katakana. */
-    public static final String FIELD_LABEL_FULLNAME_KANA = "カタカナ氏名";
-
-    /** Nhãn trường ngày sinh. */
-    public static final String FIELD_LABEL_BIRTH_DATE = "生年月日";
-
-    /** Nhãn trường địa chỉ email. */
-    public static final String FIELD_LABEL_EMAIL = "メールアドレス";
-
-    /** Nhãn trường số điện thoại. */
-    public static final String FIELD_LABEL_TEL = "電話番号";
-
-    /** Nhãn trường mật khẩu. */
-    public static final String FIELD_LABEL_PASSWORD = "パスワード";
-
-    /** Nhãn trường mật khẩu xác nhận. */
-    public static final String FIELD_LABEL_PASSWORD_CONFIRM = "パスワード（確認）";
-
-    /** Nhãn trường phòng ban (ID) dùng trong tham số message. */
-    public static final String FIELD_LABEL_DEPARTMENT_ID = "部門ID";
-
-    /** Nhãn trường nhóm / phòng ban. */
-    public static final String FIELD_LABEL_GROUP = "グループ";
-
-    /** Nhãn trường offset dùng trong tham số message. */
-    public static final String FIELD_LABEL_OFFSET = "オフセット";
-
-    /** Nhãn trường limit dùng trong tham số message. */
-    public static final String FIELD_LABEL_LIMIT = "リミット";
-
-    /** Nhãn trường chứng chỉ / bằng cấp. */
-    public static final String FIELD_LABEL_CERTIFICATION = "資格";
-
-    /** Nhãn trường ngày cấp chứng chỉ. */
-    public static final String FIELD_LABEL_START_DATE = "資格交付日";
-
-    /** Nhãn trường ngày hết hạn chứng chỉ. */
-    public static final String FIELD_LABEL_END_DATE = "失効日";
-
-    /** Nhãn trường điểm số chứng chỉ. */
-    public static final String FIELD_LABEL_SCORE = "点数";
-
-    // =========================================================================
     // Error Message Codes (ER001 - ER023)
     // =========================================================================
 

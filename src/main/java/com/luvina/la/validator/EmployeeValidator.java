@@ -7,6 +7,8 @@ package com.luvina.la.validator;
 
 import java.util.List;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.luvina.la.constant.Constants;
@@ -23,15 +25,29 @@ public class EmployeeValidator {
 
     private static final int MAX_DEPARTMENT_ID_DIGITS = 18;
 
+    private static final String FIELD_DEPARTMENT_ID_KEY = "field.departmentId";
+
+    private static final String FIELD_FULLNAME_KEY = "field.fullname";
+
+    private static final String FIELD_OFFSET_KEY = "field.offset";
+
+    private static final String FIELD_LIMIT_KEY = "field.limit";
+
     private final CommonValidator commonValidator;
+
+    private final MessageSource messageSource;
 
     /**
      * Khởi tạo validator nhân viên với các phép kiểm tra dùng chung.
      *
      * @param commonValidator Validator dùng chung
+     * @param messageSource Nguồn message và nhãn trường
      */
-    public EmployeeValidator(CommonValidator commonValidator) {
+    public EmployeeValidator(
+            CommonValidator commonValidator,
+            MessageSource messageSource) {
         this.commonValidator = commonValidator;
+        this.messageSource = messageSource;
     }
 
     /**
@@ -61,7 +77,7 @@ public class EmployeeValidator {
                 offset,
                 Constants.DEFAULT_EMPLOYEE_OFFSET,
                 true,
-                Constants.FIELD_LABEL_OFFSET
+                getLabel(FIELD_OFFSET_KEY)
         );
     }
 
@@ -77,7 +93,7 @@ public class EmployeeValidator {
                 limit,
                 Constants.DEFAULT_EMPLOYEE_PAGE_SIZE,
                 false,
-                Constants.FIELD_LABEL_LIMIT
+                getLabel(FIELD_LIMIT_KEY)
         );
     }
 
@@ -100,7 +116,7 @@ public class EmployeeValidator {
         )) {
             throw new AppException(
                     Constants.ER018,
-                    List.of(Constants.FIELD_LABEL_DEPARTMENT_ID)
+                    List.of(getLabel(FIELD_DEPARTMENT_ID_KEY))
             );
         }
 
@@ -108,7 +124,7 @@ public class EmployeeValidator {
         if (parsedDepartmentId == 0L) {
             throw new AppException(
                     Constants.ER018,
-                    List.of(Constants.FIELD_LABEL_DEPARTMENT_ID)
+                    List.of(getLabel(FIELD_DEPARTMENT_ID_KEY))
             );
         }
         return parsedDepartmentId;
@@ -130,7 +146,7 @@ public class EmployeeValidator {
         if (characterCount > Constants.EMPLOYEE_NAME_MAX_LENGTH) {
             throw new AppException(
                     Constants.ER006,
-                    List.of(Constants.EMPLOYEE_NAME_MAX_LENGTH, Constants.FIELD_LABEL_FULLNAME)
+                    List.of(Constants.EMPLOYEE_NAME_MAX_LENGTH, getLabel(FIELD_FULLNAME_KEY))
             );
         }
 
@@ -143,6 +159,20 @@ public class EmployeeValidator {
                 .replace("%", "!%")
                 .replace("_", "!_");
         return "%" + escapedEmployeeName + "%";
+    }
+
+    /**
+     * Lấy nhãn trường từ messages.properties theo locale hiện tại.
+     *
+     * @param messageKey Khóa nhãn trong messages.properties
+     * @return Nhãn trường đã externalize
+     */
+    private String getLabel(String messageKey) {
+        return messageSource.getMessage(
+                messageKey,
+                null,
+                LocaleContextHolder.getLocale()
+        );
     }
 
 }
