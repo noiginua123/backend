@@ -73,6 +73,15 @@ public final class Constants {
     /** Số ký tự tối đa của điều kiện tìm kiếm họ tên nhân viên. */
     public static final int EMPLOYEE_NAME_MAX_LENGTH = 125;
 
+    /** Tên đăng nhập quản trị viên bị loại khỏi danh sách ADM002. */
+    public static final String ADMIN_LOGIN_ID = "admin";
+
+    /** Vị trí bản ghi mặc định của ADM002. */
+    public static final int DEFAULT_EMPLOYEE_OFFSET = 0;
+
+    /** Số bản ghi cố định trên mỗi trang ADM002. */
+    public static final int DEFAULT_EMPLOYEE_PAGE_SIZE = 20;
+
     // =========================================================================
     // Field Labels (Nhãn trường trong thông báo lỗi/thông tin)
     // =========================================================================
@@ -109,6 +118,12 @@ public final class Constants {
 
     /** Nhãn trường nhóm / phòng ban. */
     public static final String FIELD_LABEL_GROUP = "グループ";
+
+    /** Nhãn trường offset dùng trong tham số message. */
+    public static final String FIELD_LABEL_OFFSET = "オフセット";
+
+    /** Nhãn trường limit dùng trong tham số message. */
+    public static final String FIELD_LABEL_LIMIT = "リミット";
 
     /** Nhãn trường chứng chỉ / bằng cấp. */
     public static final String FIELD_LABEL_CERTIFICATION = "資格";

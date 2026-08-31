@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.luvina.la.constant.Constants;
+import com.luvina.la.constant.SortOrder;
 import com.luvina.la.exception.AppException;
 
 /**
@@ -20,10 +21,6 @@ import com.luvina.la.exception.AppException;
 @Component
 public class EmployeeValidator {
 
-    private static final int DEFAULT_OFFSET = 0;
-
-    private static final int DEFAULT_LIMIT = 5;
-
     /**
      * Kiểm tra hướng sắp xếp, chỉ chấp nhận rỗng, ASC hoặc DESC.
      *
@@ -33,7 +30,7 @@ public class EmployeeValidator {
     public void validateSortOrder(String order) {
         if (order != null && !order.trim().isEmpty()) {
             String trimmedOrder = order.trim();
-            if (!"ASC".equals(trimmedOrder) && !"DESC".equals(trimmedOrder)) {
+            if (!SortOrder.isSupported(trimmedOrder)) {
                 throw new AppException(Constants.ER021);
             }
         }
@@ -47,7 +44,12 @@ public class EmployeeValidator {
      * @throws AppException Khi offset không phải số nguyên không âm
      */
     public int validateAndParseOffset(String offset) {
-        return parseUnsignedInt(offset, DEFAULT_OFFSET, true, "オフセット");
+        return parseUnsignedInt(
+                offset,
+                Constants.DEFAULT_EMPLOYEE_OFFSET,
+                true,
+                Constants.FIELD_LABEL_OFFSET
+        );
     }
 
     /**
@@ -58,7 +60,12 @@ public class EmployeeValidator {
      * @throws AppException Khi limit không phải số nguyên dương
      */
     public int validateAndParseLimit(String limit) {
-        return parseUnsignedInt(limit, DEFAULT_LIMIT, false, "リミット");
+        return parseUnsignedInt(
+                limit,
+                Constants.DEFAULT_EMPLOYEE_PAGE_SIZE,
+                false,
+                Constants.FIELD_LABEL_LIMIT
+        );
     }
 
     /**

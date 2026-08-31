@@ -54,17 +54,19 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
      *
      * @param employeeName Mẫu LIKE đã được escape, hoặc null nếu không tìm theo tên
      * @param departmentId ID phòng ban, hoặc null nếu lấy tất cả phòng ban
+     * @param adminLoginId Tên đăng nhập admin cần loại trừ
      * @return Tổng số nhân viên thỏa mãn điều kiện tìm kiếm (không bao gồm admin)
      */
     @Query(value = """
             SELECT COUNT(e.employee_id)
             FROM employees e
-            WHERE e.employee_login_id != 'admin'
+            WHERE e.employee_login_id != :adminLoginId
               AND (:departmentId IS NULL OR e.department_id = :departmentId)
               AND (:employeeName IS NULL OR e.employee_name LIKE :employeeName ESCAPE '!')
             """, nativeQuery = true)
     long countEmployees(@Param("employeeName") String employeeName,
-                        @Param("departmentId") Long departmentId);
+                        @Param("departmentId") Long departmentId,
+                        @Param("adminLoginId") String adminLoginId);
 
     /**
      * Lấy danh sách nhân viên (loại trừ tài khoản admin) theo điều kiện tìm kiếm và phân trang.
@@ -88,6 +90,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
      * @param ordCertificationName ASC/DESC để sort chứng chỉ, hoặc chuỗi rỗng
      * @param ordEndDate ASC/DESC để sort ngày hết hạn, hoặc chuỗi rỗng
      * @param prioritySort Cột ưu tiên làm tiêu chí sort chính (employeeName / certificationName / endDate)
+     * @param adminLoginId Tên đăng nhập admin cần loại trừ
      * @param limit Số bản ghi tối đa cần lấy
      * @param offset Vị trí bản ghi bắt đầu lấy
      * @return Danh sách projection, mỗi phần tử tương ứng một nhân viên
@@ -122,7 +125,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
                 )
             LEFT JOIN certifications c
                 ON c.certification_id = ec.certification_id
-            WHERE e.employee_login_id != 'admin'
+            WHERE e.employee_login_id != :adminLoginId
               AND (:departmentId IS NULL OR e.department_id = :departmentId)
               AND (:employeeName IS NULL OR e.employee_name LIKE :employeeName ESCAPE '!')
             ORDER BY
@@ -151,6 +154,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
             @Param("ordCertificationName") String ordCertificationName,
             @Param("ordEndDate") String ordEndDate,
             @Param("prioritySort") String prioritySort,
+            @Param("adminLoginId") String adminLoginId,
             @Param("limit") int limit,
             @Param("offset") int offset
     );

@@ -18,6 +18,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.luvina.la.mapper.EmployeeMapper;
+import com.luvina.la.constant.Constants;
+import com.luvina.la.constant.SortField;
+import com.luvina.la.constant.SortOrder;
 import com.luvina.la.payload.request.EmployeeSearchRequest;
 import com.luvina.la.repository.EmployeeRepository;
 import com.luvina.la.validator.EmployeeValidator;
@@ -45,9 +48,9 @@ class EmployeeServiceImplTest {
                 employeeMapper,
                 new EmployeeValidator()
         );
-        when(employeeRepository.countEmployees(any(), any())).thenReturn(1L);
+        when(employeeRepository.countEmployees(any(), any(), anyString())).thenReturn(1L);
         when(employeeRepository.searchEmployees(
-                any(), any(), anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt()
+                any(), any(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt()
         )).thenReturn(Collections.emptyList());
     }
 
@@ -56,9 +59,19 @@ class EmployeeServiceImplTest {
      */
     @Test
     void shouldDefaultEmployeeNameOrderToAsc() {
-        employeeService.searchEmployees(createRequest("", "DESC", "DESC", "employeeName"));
+        employeeService.searchEmployees(createRequest(
+                "",
+                SortOrder.DESC_VALUE,
+                SortOrder.DESC_VALUE,
+                SortField.EMPLOYEE_NAME_VALUE
+        ));
 
-        verifySearch("ASC", "DESC", "DESC", "employeeName");
+        verifySearch(
+                SortOrder.ASC_VALUE,
+                SortOrder.DESC_VALUE,
+                SortOrder.DESC_VALUE,
+                SortField.EMPLOYEE_NAME_VALUE
+        );
     }
 
     /**
@@ -66,9 +79,19 @@ class EmployeeServiceImplTest {
      */
     @Test
     void shouldDefaultCertificationNameOrderToAsc() {
-        employeeService.searchEmployees(createRequest("DESC", "", "DESC", "certificationName"));
+        employeeService.searchEmployees(createRequest(
+                SortOrder.DESC_VALUE,
+                "",
+                SortOrder.DESC_VALUE,
+                SortField.CERTIFICATION_NAME_VALUE
+        ));
 
-        verifySearch("DESC", "ASC", "DESC", "certificationName");
+        verifySearch(
+                SortOrder.DESC_VALUE,
+                SortOrder.ASC_VALUE,
+                SortOrder.DESC_VALUE,
+                SortField.CERTIFICATION_NAME_VALUE
+        );
     }
 
     /**
@@ -76,9 +99,19 @@ class EmployeeServiceImplTest {
      */
     @Test
     void shouldDefaultEndDateOrderToAsc() {
-        employeeService.searchEmployees(createRequest("DESC", "DESC", "", "endDate"));
+        employeeService.searchEmployees(createRequest(
+                SortOrder.DESC_VALUE,
+                SortOrder.DESC_VALUE,
+                "",
+                SortField.END_DATE_VALUE
+        ));
 
-        verifySearch("DESC", "DESC", "ASC", "endDate");
+        verifySearch(
+                SortOrder.DESC_VALUE,
+                SortOrder.DESC_VALUE,
+                SortOrder.ASC_VALUE,
+                SortField.END_DATE_VALUE
+        );
     }
 
     /**
@@ -86,9 +119,14 @@ class EmployeeServiceImplTest {
      */
     @Test
     void shouldDefaultAllEmptyOrdersToAsc() {
-        employeeService.searchEmployees(createRequest("", "", "", "employeeName"));
+        employeeService.searchEmployees(createRequest("", "", "", SortField.EMPLOYEE_NAME_VALUE));
 
-        verifySearch("ASC", "ASC", "ASC", "employeeName");
+        verifySearch(
+                SortOrder.ASC_VALUE,
+                SortOrder.ASC_VALUE,
+                SortOrder.ASC_VALUE,
+                SortField.EMPLOYEE_NAME_VALUE
+        );
     }
 
     /**
@@ -137,7 +175,8 @@ class EmployeeServiceImplTest {
                 certificationNameOrder,
                 endDateOrder,
                 prioritySort,
-                5,
+                Constants.ADMIN_LOGIN_ID,
+                Constants.DEFAULT_EMPLOYEE_PAGE_SIZE,
                 0
         );
     }

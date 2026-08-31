@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.luvina.la.constant.Constants;
+import com.luvina.la.constant.SortField;
+import com.luvina.la.constant.SortOrder;
 import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.dto.EmployeeListItemProjection;
 import com.luvina.la.dto.EmployeeSearchCriteria;
@@ -55,7 +57,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     /**
-     * Tìm kiếm danh sách nhân viên, bao gồm admin, theo bốn giai đoạn: validate sort, chuẩn hóa input,
+     * Tìm kiếm danh sách nhân viên, loại trừ admin, theo bốn giai đoạn: validate sort, chuẩn hóa input,
      * đếm tổng số bản ghi, sau đó lấy và mapping danh sách nếu có dữ liệu.
      *
      * @param request Request chứa điều kiện tìm kiếm, sắp xếp và phân trang
@@ -114,7 +116,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     private long countEmployees(EmployeeSearchCriteria criteria) {
         return employeeRepository.countEmployees(
                 criteria.getEmployeeName(),
-                criteria.getDepartmentId()
+                criteria.getDepartmentId(),
+                Constants.ADMIN_LOGIN_ID
         );
     }
 
@@ -139,6 +142,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 criteria.getOrdCertificationName(),
                 criteria.getOrdEndDate(),
                 criteria.getPrioritySort(),
+                Constants.ADMIN_LOGIN_ID,
                 criteria.getLimit(),
                 criteria.getOffset()
         );
@@ -153,14 +157,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return Tên cột ưu tiên hợp lệ
      */
     private String normalizePrioritySort(String prioritySort) {
-        if (prioritySort == null) {
-            return "employeeName";
-        }
-        String trimmed = prioritySort.trim();
-        if ("certificationName".equals(trimmed) || "endDate".equals(trimmed)) {
-            return trimmed;
-        }
-        return "employeeName";
+        return SortField.fromValueOrDefault(prioritySort).getValue();
     }
 
     /**
@@ -186,10 +183,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return Hướng sắp xếp đã chuẩn hóa
      */
     private String normalizeSortOrder(String sortOrder) {
-        if (sortOrder == null || sortOrder.trim().isEmpty()) {
-            return "ASC";
-        }
-        return sortOrder.trim();
+        return SortOrder.fromValueOrDefault(sortOrder).getValue();
     }
 
     /**

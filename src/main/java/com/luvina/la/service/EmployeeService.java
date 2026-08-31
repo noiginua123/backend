@@ -18,7 +18,7 @@ public interface EmployeeService {
 
     /**
      * Kiểm tra điều kiện đầu vào, tìm kiếm và phân trang danh sách nhân viên,
-     * bao gồm cả tài khoản admin.
+     * loại trừ tài khoản admin.
      *
      * @param request Request chứa điều kiện tìm kiếm, sắp xếp và phân trang
      * @return Response chứa code thành công, tổng số bản ghi và danh sách nhân viên
