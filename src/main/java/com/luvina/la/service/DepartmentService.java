@@ -5,7 +5,9 @@
  */
 package com.luvina.la.service;
 
-import com.luvina.la.payload.response.ListDepartmentResponse;
+import java.util.List;
+
+import com.luvina.la.dto.DepartmentDTO;
 
 /**
  * Interface nghiệp vụ cho chức năng phòng ban.
@@ -15,9 +17,10 @@ import com.luvina.la.payload.response.ListDepartmentResponse;
 public interface DepartmentService {
 
     /**
-     * Lấy danh sách tất cả phòng ban.
+     * Lấy danh sách tất cả phòng ban (sắp xếp theo ID tăng dần).
+     * Chỉ trả về dữ liệu; Controller chịu trách nhiệm đóng gói code HTTP vào response.
      *
-     * @return ListDepartmentResponse gồm code = 200 và danh sách phòng ban.
+     * @return Danh sách DTO phòng ban
      */
-    ListDepartmentResponse getListDepartments();
+    List<DepartmentDTO> getListDepartments();
 }

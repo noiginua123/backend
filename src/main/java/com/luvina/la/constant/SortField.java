@@ -18,11 +18,11 @@ public enum SortField {
 
     END_DATE("endDate");
 
+    /**
+     * Giá trị mặc định của cột sắp xếp, phục vụ {@code @RequestParam}.
+     * Annotation yêu cầu hằng biên dịch nên không thể thay bằng getValue().
+     */
     public static final String EMPLOYEE_NAME_VALUE = "employeeName";
-
-    public static final String CERTIFICATION_NAME_VALUE = "certificationName";
-
-    public static final String END_DATE_VALUE = "endDate";
 
     private final String value;
 
@@ -53,11 +53,10 @@ public enum SortField {
     public static SortField fromValueOrDefault(String value) {
         if (value != null) {
             String trimmedValue = value.trim();
-            if (CERTIFICATION_NAME_VALUE.equals(trimmedValue)) {
-                return CERTIFICATION_NAME;
-            }
-            if (END_DATE_VALUE.equals(trimmedValue)) {
-                return END_DATE;
+            for (SortField sortField : values()) {
+                if (sortField.value.equals(trimmedValue)) {
+                    return sortField;
+                }
             }
         }
         return EMPLOYEE_NAME;

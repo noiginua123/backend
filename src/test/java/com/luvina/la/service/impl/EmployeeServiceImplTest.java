@@ -5,31 +5,29 @@
  */
 package com.luvina.la.service.impl;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.Locale;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.support.StaticMessageSource;
 
 import com.luvina.la.constant.Constants;
-import com.luvina.la.constant.SortField;
-import com.luvina.la.constant.SortOrder;
+import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.mapper.EmployeeMapper;
-import com.luvina.la.payload.request.EmployeeSearchRequest;
+import com.luvina.la.repository.EmployeeCertificationRepository;
 import com.luvina.la.repository.EmployeeRepository;
-import com.luvina.la.validator.CommonValidator;
-import com.luvina.la.validator.EmployeeValidator;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
- * Kiểm thử quy tắc chuẩn hóa tham số sắp xếp của ADM002.
+ * Kiểm thử service danh sách nhân viên: uỷ quyền truy vấn Repository và mapping DTO.
+ *
+ * <p>Việc kiểm tra và chuẩn hóa tham số đã chuyển sang tầng Controller nên được
+ * kiểm thử ở {@code EmployeeControllerTest}.</p>
  *
  * @author thanhvinh
  */
@@ -37,162 +35,61 @@ class EmployeeServiceImplTest {
 
     private EmployeeRepository employeeRepository;
 
+    private EmployeeMapper employeeMapper;
+
     private EmployeeServiceImpl employeeService;
 
     /**
-     * Khởi tạo service và repository giả lập trước mỗi test.
+     * Khởi tạo service với repository và mapper giả lập trước mỗi test.
      */
     @BeforeEach
     void setUp() {
         employeeRepository = mock(EmployeeRepository.class);
-        EmployeeMapper employeeMapper = mock(EmployeeMapper.class);
+        employeeMapper = mock(EmployeeMapper.class);
+        EmployeeCertificationRepository employeeCertificationRepository = mock(EmployeeCertificationRepository.class);
+        PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
         employeeService = new EmployeeServiceImpl(
                 employeeRepository,
                 employeeMapper,
-                new EmployeeValidator(new CommonValidator(), createMessageSource())
+                employeeCertificationRepository,
+                passwordEncoder
         );
-        when(employeeRepository.countEmployees(any(), any(), anyString())).thenReturn(1L);
+    }
+
+    /**
+     * Kiểm tra getTotalRecords trả đúng số bản ghi và truyền admin login id xuống Repository.
+     */
+    @Test
+    void shouldReturnTotalRecordsFromRepository() {
+        when(employeeRepository.countEmployees("%an%", 5L, Constants.ADMIN_LOGIN_ID))
+                .thenReturn(9L);
+
+        long total = employeeService.getTotalRecords("%an%", 5L);
+
+        assertEquals(9L, total);
+        verify(employeeRepository).countEmployees("%an%", 5L, Constants.ADMIN_LOGIN_ID);
+    }
+
+    /**
+     * Kiểm tra getEmployees truyền đủ tham số (kèm admin login id) và mapping kết quả.
+     */
+    @Test
+    void shouldPassArgumentsAndMapRowsWhenSearching() {
+        Object[] row = new Object[] {1L};
+        EmployeeListDTO dto = mock(EmployeeListDTO.class);
         when(employeeRepository.searchEmployees(
-                any(), any(), anyString(), anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt()
-        )).thenReturn(Collections.emptyList());
-    }
+                "%an%", 5L, "ASC", "DESC", "ASC", "employeeName",
+                Constants.ADMIN_LOGIN_ID, 20, 0
+        )).thenReturn(Collections.singletonList(row));
+        when(employeeMapper.toDTO(row)).thenReturn(dto);
 
-    /**
-     * Tạo nguồn nhãn tối thiểu cho validator trong unit test.
-     *
-     * @return Message source chứa nhãn offset và limit
-     */
-    private StaticMessageSource createMessageSource() {
-        StaticMessageSource messageSource = new StaticMessageSource();
-        messageSource.addMessage("field.offset", Locale.getDefault(), "offset");
-        messageSource.addMessage("field.limit", Locale.getDefault(), "limit");
-        return messageSource;
-    }
+        List<EmployeeListDTO> result = employeeService.getEmployees(
+                "%an%", 5L, "ASC", "DESC", "ASC", "employeeName", 20, 0);
 
-    /**
-     * Kiểm tra cột tên ưu tiên rỗng được mặc định ASC.
-     */
-    @Test
-    void shouldDefaultEmployeeNameOrderToAsc() {
-        employeeService.searchEmployees(createRequest(
-                "",
-                SortOrder.DESC_VALUE,
-                SortOrder.DESC_VALUE,
-                SortField.EMPLOYEE_NAME_VALUE
-        ));
-
-        verifySearch(
-                SortOrder.ASC_VALUE,
-                SortOrder.DESC_VALUE,
-                SortOrder.DESC_VALUE,
-                SortField.EMPLOYEE_NAME_VALUE
-        );
-    }
-
-    /**
-     * Kiểm tra cột chứng chỉ ưu tiên rỗng được mặc định ASC.
-     */
-    @Test
-    void shouldDefaultCertificationNameOrderToAsc() {
-        employeeService.searchEmployees(createRequest(
-                SortOrder.DESC_VALUE,
-                "",
-                SortOrder.DESC_VALUE,
-                SortField.CERTIFICATION_NAME_VALUE
-        ));
-
-        verifySearch(
-                SortOrder.DESC_VALUE,
-                SortOrder.ASC_VALUE,
-                SortOrder.DESC_VALUE,
-                SortField.CERTIFICATION_NAME_VALUE
-        );
-    }
-
-    /**
-     * Kiểm tra cột ngày hết hạn ưu tiên rỗng được mặc định ASC.
-     */
-    @Test
-    void shouldDefaultEndDateOrderToAsc() {
-        employeeService.searchEmployees(createRequest(
-                SortOrder.DESC_VALUE,
-                SortOrder.DESC_VALUE,
-                "",
-                SortField.END_DATE_VALUE
-        ));
-
-        verifySearch(
-                SortOrder.DESC_VALUE,
-                SortOrder.DESC_VALUE,
-                SortOrder.ASC_VALUE,
-                SortField.END_DATE_VALUE
-        );
-    }
-
-    /**
-     * Kiểm tra cả ba hướng rỗng đều được chuẩn hóa thành ASC.
-     */
-    @Test
-    void shouldDefaultAllEmptyOrdersToAsc() {
-        employeeService.searchEmployees(createRequest("", "", "", SortField.EMPLOYEE_NAME_VALUE));
-
-        verifySearch(
-                SortOrder.ASC_VALUE,
-                SortOrder.ASC_VALUE,
-                SortOrder.ASC_VALUE,
-                SortField.EMPLOYEE_NAME_VALUE
-        );
-    }
-
-    /**
-     * Tạo request chỉ chứa cấu hình sort cần kiểm thử.
-     *
-     * @param employeeNameOrder Hướng sort tên
-     * @param certificationNameOrder Hướng sort chứng chỉ
-     * @param endDateOrder Hướng sort ngày hết hạn
-     * @param prioritySort Cột sort ưu tiên
-     * @return Request dùng cho test
-     */
-    private EmployeeSearchRequest createRequest(
-            String employeeNameOrder,
-            String certificationNameOrder,
-            String endDateOrder,
-            String prioritySort) {
-        return new EmployeeSearchRequest(
-                "",
-                "",
-                employeeNameOrder,
-                certificationNameOrder,
-                endDateOrder,
-                prioritySort,
-                "",
-                ""
-        );
-    }
-
-    /**
-     * Xác minh Repository nhận đúng cấu hình sort đã chuẩn hóa.
-     *
-     * @param employeeNameOrder Hướng sort tên mong đợi
-     * @param certificationNameOrder Hướng sort chứng chỉ mong đợi
-     * @param endDateOrder Hướng sort ngày hết hạn mong đợi
-     * @param prioritySort Cột sort ưu tiên mong đợi
-     */
-    private void verifySearch(
-            String employeeNameOrder,
-            String certificationNameOrder,
-            String endDateOrder,
-            String prioritySort) {
+        assertEquals(1, result.size());
+        assertEquals(dto, result.get(0));
         verify(employeeRepository).searchEmployees(
-                null,
-                null,
-                employeeNameOrder,
-                certificationNameOrder,
-                endDateOrder,
-                prioritySort,
-                Constants.ADMIN_LOGIN_ID,
-                Constants.DEFAULT_EMPLOYEE_PAGE_SIZE,
-                0
-        );
+                "%an%", 5L, "ASC", "DESC", "ASC", "employeeName",
+                Constants.ADMIN_LOGIN_ID, 20, 0);
     }
 }

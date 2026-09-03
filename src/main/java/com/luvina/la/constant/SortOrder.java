@@ -16,10 +16,6 @@ public enum SortOrder {
 
     DESC("DESC");
 
-    public static final String ASC_VALUE = "ASC";
-
-    public static final String DESC_VALUE = "DESC";
-
     private final String value;
 
     /**
@@ -47,7 +43,12 @@ public enum SortOrder {
      * @return true nếu giá trị là ASC hoặc DESC
      */
     public static boolean isSupported(String value) {
-        return ASC_VALUE.equals(value) || DESC_VALUE.equals(value);
+        for (SortOrder sortOrder : values()) {
+            if (sortOrder.value.equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -60,6 +61,12 @@ public enum SortOrder {
         if (value == null || value.trim().isEmpty()) {
             return ASC;
         }
-        return DESC_VALUE.equals(value.trim()) ? DESC : ASC;
+        String trimmedValue = value.trim();
+        for (SortOrder sortOrder : values()) {
+            if (sortOrder.value.equals(trimmedValue)) {
+                return sortOrder;
+            }
+        }
+        return ASC;
     }
 }

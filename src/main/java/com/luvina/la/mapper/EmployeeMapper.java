@@ -24,26 +24,37 @@ import com.luvina.la.dto.EmployeeListDTO;
 @Component
 public class EmployeeMapper {
 
+    /** Vị trí cột ID nhân viên trong mảng kết quả truy vấn native. */
     private static final int IDX_EMPLOYEE_ID = 0;
 
+    /** Vị trí cột họ tên nhân viên trong mảng kết quả truy vấn native. */
     private static final int IDX_EMPLOYEE_NAME = 1;
 
+    /** Vị trí cột ngày sinh nhân viên trong mảng kết quả truy vấn native. */
     private static final int IDX_EMPLOYEE_BIRTH_DATE = 2;
 
+    /** Vị trí cột tên phòng ban trong mảng kết quả truy vấn native. */
     private static final int IDX_DEPARTMENT_NAME = 3;
 
+    /** Vị trí cột email nhân viên trong mảng kết quả truy vấn native. */
     private static final int IDX_EMPLOYEE_EMAIL = 4;
 
+    /** Vị trí cột số điện thoại nhân viên trong mảng kết quả truy vấn native. */
     private static final int IDX_EMPLOYEE_TELEPHONE = 5;
 
+    /** Vị trí cột tên chứng chỉ trong mảng kết quả truy vấn native. */
     private static final int IDX_CERTIFICATION_NAME = 6;
 
+    /** Vị trí cột ngày hết hạn chứng chỉ trong mảng kết quả truy vấn native. */
     private static final int IDX_END_DATE = 7;
 
+    /** Vị trí cột điểm số chứng chỉ trong mảng kết quả truy vấn native. */
     private static final int IDX_SCORE = 8;
 
+    /** Vị trí cột vai trò nhân viên trong mảng kết quả truy vấn native. */
     private static final int IDX_ROLE = 9;
 
+    /** Số lượng cột mong đợi trả về từ câu truy vấn native. */
     private static final int EXPECTED_COLUMN_COUNT = 10;
 
     /**
