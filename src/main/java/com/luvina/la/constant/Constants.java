@@ -116,8 +116,8 @@ public final class Constants {
     /** Regex Login ID: bắt đầu bằng chữ hoặc gạch dưới, sau đó là chữ / số / gạch dưới. */
     public static final String REGEX_LOGIN_ID = "^[a-zA-Z_][a-zA-Z0-9_]*$";
 
-    /** Regex Katakana (full-width + half-width + dấu cách) dùng cho カタカナ氏名. */
-    public static final String REGEX_KATAKANA = "^[\\u30A0-\\u30FF\\uFF66-\\uFF9F\\u3000 ]+$";
+    /** Regex Katakana chỉ cho phép half-size (半角カタカナ \uFF65-\uFF9F) và khoảng trắng half-width. */
+    public static final String REGEX_KATAKANA = "^[\\uFF65-\\uFF9F ]+$";
 
     /** Regex ký tự 1 byte (half-size) dùng cho số điện thoại. */
     public static final String REGEX_HALF_SIZE = "^[\\u0020-\\u007E]+$";

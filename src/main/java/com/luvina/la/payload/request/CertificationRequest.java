@@ -13,10 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Thông tin một chứng chỉ đính kèm khi thêm mới nhân viên (ADM004).
- *
- * <p>Tên trường đặt theo đúng kiểu dữ liệu EmployeeCertificationDTO bên Front-end:
- * certificationId, startDate, endDate, score. Tất cả là kiểu String để validate ở phía Server.</p>
+ * Payload chứa thông tin chứng chỉ của nhân viên.
  *
  * @author thanhvinh
  */

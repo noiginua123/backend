@@ -17,8 +17,6 @@ import lombok.Setter;
 /**
  * Response cho API validate / thêm mới nhân viên (ADM004/ADM005).
  *
- * <p>Trường null sẽ không xuất hiện trong JSON (validate chỉ trả về mã code).</p>
- *
  * @author thanhvinh
  */
 @Getter

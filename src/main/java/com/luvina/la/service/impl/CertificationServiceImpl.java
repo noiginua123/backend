@@ -18,7 +18,7 @@ import com.luvina.la.repository.CertificationRepository;
 import com.luvina.la.service.CertificationService;
 
 /**
- * Hiện thực các nghiệp vụ liên quan đến quản lý chứng chỉ.
+ * Triển khai các nghiệp vụ liên quan đến quản lý chứng chỉ.
  *
  * @author thanhvinh
  */

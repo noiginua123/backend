@@ -18,7 +18,7 @@ import com.luvina.la.payload.response.ListCertificationResponse;
 import com.luvina.la.service.CertificationService;
 
 /**
- * Controller cho chức năng chứng chỉ (dropdown 資格 của ADM004).
+ * Controller cho chức năng chứng chỉ.
  *
  * @author thanhvinh
  */

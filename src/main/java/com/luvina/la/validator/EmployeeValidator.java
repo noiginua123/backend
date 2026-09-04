@@ -232,9 +232,6 @@ public class EmployeeValidator {
     /**
      * Kiểm tra toàn bộ dữ liệu thêm mới nhân viên (ADM004).
      *
-     * <p>Thứ tự kiểm tra quyết định mã lỗi trả về trước tiên: login id, phòng ban,
-     * họ tên, tên kana, ngày sinh, email, điện thoại, mật khẩu, chứng chỉ.</p>
-     *
      * @param request Dữ liệu nhân viên
      * @throws AppException Khi có bất kỳ trường nào không hợp lệ
      */

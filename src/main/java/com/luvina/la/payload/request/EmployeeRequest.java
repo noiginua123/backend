@@ -14,10 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Payload nhận từ FE khi thêm mới nhân viên (ADM004/ADM005).
- *
- * <p>Toàn bộ trường đều là kiểu String để thuận tiện validate (Server không tin cậy kiểu dữ liệu từ client).
- * Danh sách certifications có 0 hoặc 1 phần tử vì giao diện ADM004 chỉ có một khối chứng chỉ.</p>
+ * Payload chứa thông tin nhân viên.
  *
  * @author thanhvinh
  */

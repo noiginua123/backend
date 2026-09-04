@@ -18,7 +18,7 @@ import com.luvina.la.repository.DepartmentRepository;
 import com.luvina.la.service.DepartmentService;
 
 /**
- * Hiện thực các nghiệp vụ liên quan đến phòng ban.
+ * Triển khai các nghiệp vụ liên quan đến phòng ban.
  *
  * @author thanhvinh
  */

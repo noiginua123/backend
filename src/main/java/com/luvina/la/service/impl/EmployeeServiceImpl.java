@@ -27,11 +27,7 @@ import com.luvina.la.repository.EmployeeRepository;
 import com.luvina.la.service.EmployeeService;
 
 /**
- * Hiện thực nghiệp vụ truy vấn và thêm mới dữ liệu nhân viên.
- *
- * <p>Phần truy vấn chỉ mapping sang DTO; phần thêm mới (ADM004) lưu nhân viên kèm
- * chứng chỉ trong một transaction. Việc kiểm tra tham số đầu vào do EmployeeValidator
- * ở tầng Controller đảm nhiệm.</p>
+ * Triển khai các nghiệp vụ truy vấn và thêm mới dữ liệu nhân viên.
  *
  * @author thanhvinh
  */
@@ -129,9 +125,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     /**
      * Thêm mới nhân viên (ADM004) kèm chứng chỉ nếu có.
-     *
-     * <p>Mật khẩu được mã hóa trước khi lưu; quyền mặc định là ROLE_USER (0).
-     * Toàn bộ thao tác nằm trong một transaction, rollback khi có bất kỳ exception.</p>
      *
      * @param employeeRequest Dữ liệu nhân viên đã qua validate
      * @return ID nhân viên vừa được tạo

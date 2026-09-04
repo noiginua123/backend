@@ -32,10 +32,9 @@ import com.luvina.la.validator.EmployeeValidator;
 
 /**
  * Controller tiếp nhận và xử lý các yêu cầu liên quan đến nhân viên.
- *
- * <p>Tầng Controller chịu trách nhiệm: kiểm tra tham số đầu vào (qua
- * EmployeeValidator), chuẩn hóa tham số sắp xếp, gọi Service, rồi đóng gói response.
- * Phục vụ ADM002 (danh sách) và ADM004 (validate + thêm mới).</p>
+ * Tầng Controller chịu trách nhiệm kiểm tra tham số đầu vào (qua EmployeeValidator),
+ * chuẩn hóa tham số sắp xếp, gọi Service xử lý và đóng gói response cho client.
+ * Phục vụ các chức năng: ADM002 (danh sách nhân viên) và ADM004 (thêm mới nhân viên).
  *
  * @author thanhvinh
  */
@@ -43,15 +42,17 @@ import com.luvina.la.validator.EmployeeValidator;
 @RequestMapping({"/employee", "/employees"})
 public class EmployeeController {
 
+    /** Service xử lý nghiệp vụ liên quan đến nhân viên. */
     private final EmployeeService employeeService;
 
+    /** Validator kiểm tra tính hợp lệ dữ liệu nhân viên. */
     private final EmployeeValidator employeeValidator;
 
     /**
-     * Khởi tạo controller với service nghiệp vụ và validator nhân viên.
+     * Khởi tạo EmployeeController với các dependency cần thiết.
      *
-     * @param employeeService Service truy vấn dữ liệu nhân viên
-     * @param employeeValidator Validator kiểm tra tham số
+     * @param employeeService Service xử lý nghiệp vụ nhân viên
+     * @param employeeValidator Validator kiểm tra tính hợp lệ dữ liệu nhân viên
      */
     public EmployeeController(EmployeeService employeeService,
                               EmployeeValidator employeeValidator) {
@@ -62,8 +63,8 @@ public class EmployeeController {
     /**
      * API tìm kiếm, sắp xếp và phân trang danh sách nhân viên (ADM002).
      *
-     * @param request Request chứa điều kiện tìm kiếm, sắp xếp và phân trang
-     * @return ResponseEntity chứa ListEmployeeResponse
+     * @param request Đối tượng chứa các điều kiện tìm kiếm, sắp xếp và phân trang
+     * @return ResponseEntity chứa danh sách nhân viên và tổng số bản ghi (ListEmployeeResponse)
      */
     @GetMapping
     public ResponseEntity<ListEmployeeResponse> getEmployees(
@@ -85,10 +86,21 @@ public class EmployeeController {
 
         // 3. Gọi service lấy dữ liệu; chỉ truy vấn danh sách khi có bản ghi
         long totalRecords = employeeService.getTotalRecords(employeeName, departmentId);
-        List<EmployeeListDTO> employees = totalRecords > 0
-                ? employeeService.getEmployees(employeeName, departmentId, ordEmployeeName,
-                        ordCertificationName, ordEndDate, prioritySort, limit, offset)
-                : Collections.emptyList();
+        List<EmployeeListDTO> employees;
+        if (totalRecords > 0) {
+            employees = employeeService.getEmployees(
+                    employeeName,
+                    departmentId,
+                    ordEmployeeName,
+                    ordCertificationName,
+                    ordEndDate,
+                    prioritySort,
+                    limit,
+                    offset
+            );
+        } else {
+            employees = Collections.emptyList();
+        }
 
         // 4. Đóng gói response và gắn code thành công
         ListEmployeeResponse response = new ListEmployeeResponse(
@@ -100,10 +112,10 @@ public class EmployeeController {
     }
 
     /**
-     * API kiểm tra dữ liệu trước khi sang màn xác nhận ADM005 (không ghi DB).
+     * API kiểm tra tính hợp lệ dữ liệu nhân viên trước khi xác nhận tạo mới (ADM004/ADM005).
      *
-     * @param request Dữ liệu nhân viên từ form ADM004
-     * @return ResponseEntity chứa EmployeeResponse chỉ gồm code thành công
+     * @param request Dữ liệu thông tin nhân viên cần kiểm tra từ form ADM004
+     * @return ResponseEntity chứa EmployeeResponse với mã thành công
      */
     @PostMapping("/validate")
     public ResponseEntity<EmployeeResponse> validateEmployee(
@@ -114,10 +126,10 @@ public class EmployeeController {
     }
 
     /**
-     * API thêm mới nhân viên (ADM004/ADM005). Validate lại trước khi ghi DB.
+     * API thêm mới thông tin nhân viên vào hệ thống (ADM004/ADM005).
      *
-     * @param request Dữ liệu nhân viên từ form ADM004
-     * @return ResponseEntity chứa EmployeeResponse kèm id và message MSG001
+     * @param request Dữ liệu thông tin nhân viên cần thêm mới từ form ADM004
+     * @return ResponseEntity chứa EmployeeResponse kèm ID nhân viên và thông báo kết quả
      */
     @PostMapping
     public ResponseEntity<EmployeeResponse> addEmployee(
@@ -130,17 +142,17 @@ public class EmployeeController {
     }
 
     /**
-     * Bind các query param theo contract API vào request object của ADM002.
+     * Bind các tham số truy vấn tìm kiếm từ request vào đối tượng EmployeeSearchRequest.
      *
      * @param employeeName Tên nhân viên cần tìm kiếm
-     * @param departmentId ID phòng ban
-     * @param ordEmployeeName Hướng sắp xếp theo tên nhân viên
-     * @param ordCertificationName Hướng sắp xếp theo tên chứng chỉ
-     * @param ordEndDate Hướng sắp xếp theo ngày hết hạn
-     * @param prioritySort Cột sắp xếp ưu tiên
-     * @param offset Vị trí bản ghi bắt đầu
-     * @param limit Số bản ghi tối đa
-     * @return Request object đã bind đầy đủ query param
+     * @param departmentId ID phòng ban cần lọc
+     * @param ordEmployeeName Hướng sắp xếp theo tên nhân viên (ASC/DESC)
+     * @param ordCertificationName Hướng sắp xếp theo tên chứng chỉ (ASC/DESC)
+     * @param ordEndDate Hướng sắp xếp theo ngày kết thúc chứng chỉ (ASC/DESC)
+     * @param prioritySort Cột ưu tiên sắp xếp
+     * @param offset Vị trí bắt đầu lấy bản ghi
+     * @param limit Số lượng bản ghi tối đa trên một trang
+     * @return Đối tượng EmployeeSearchRequest chứa các tham số đã bind
      */
     @ModelAttribute
     public EmployeeSearchRequest bindEmployeeSearchRequest(
