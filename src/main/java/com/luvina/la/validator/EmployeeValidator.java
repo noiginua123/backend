@@ -326,17 +326,17 @@ public class EmployeeValidator {
     }
 
     /**
-     * Kiểm tra ngày sinh: bắt buộc, đúng định dạng yyyy/MM/dd.
+     * Kiểm tra ngày sinh: bắt buộc chọn, đúng định dạng yyyy/MM/dd và ngày hợp lệ.
      *
      * @param birthDate Ngày sinh
      */
     private void validateBirthDate(String birthDate) {
         String label = getLabel(FIELD_BIRTH_DATE_KEY);
         if (commonValidator.isEmpty(birthDate)) {
-            throw new AppException(Constants.ER001, List.of(label));
+            throw new AppException(Constants.ER002, List.of(label));
         }
         if (!commonValidator.isValidDate(birthDate.trim())) {
-            throw new AppException(Constants.ER005, List.of(label, Constants.DATE_FORMAT));
+            throw new AppException(Constants.ER011, List.of(label));
         }
     }
 
@@ -435,17 +435,17 @@ public class EmployeeValidator {
         }
 
         if (commonValidator.isEmpty(certification.getStartDate())) {
-            throw new AppException(Constants.ER001, List.of(startLabel));
+            throw new AppException(Constants.ER002, List.of(startLabel));
         }
         if (!commonValidator.isValidDate(certification.getStartDate().trim())) {
-            throw new AppException(Constants.ER005, List.of(startLabel, Constants.DATE_FORMAT));
+            throw new AppException(Constants.ER011, List.of(startLabel));
         }
 
         if (commonValidator.isEmpty(certification.getEndDate())) {
-            throw new AppException(Constants.ER001, List.of(endLabel));
+            throw new AppException(Constants.ER002, List.of(endLabel));
         }
         if (!commonValidator.isValidDate(certification.getEndDate().trim())) {
-            throw new AppException(Constants.ER005, List.of(endLabel, Constants.DATE_FORMAT));
+            throw new AppException(Constants.ER011, List.of(endLabel));
         }
         if (commonValidator.isEndDateBeforeStartDate(
                 certification.getStartDate().trim(),
@@ -459,9 +459,6 @@ public class EmployeeValidator {
         String score = certification.getScore().trim();
         if (!commonValidator.isPositiveNumber(score)) {
             throw new AppException(Constants.ER018, List.of(scoreLabel));
-        }
-        if (commonValidator.isMaxLength(score, Constants.SCORE_MAX_LENGTH)) {
-            throw new AppException(Constants.ER006, List.of(Constants.SCORE_MAX_LENGTH, scoreLabel));
         }
     }
 

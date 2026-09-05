@@ -19,6 +19,7 @@ import com.luvina.la.constant.Constants;
 import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.entity.EmployeeCertificationEntity;
 import com.luvina.la.entity.EmployeeEntity;
+import com.luvina.la.exception.AppException;
 import com.luvina.la.mapper.EmployeeMapper;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
@@ -132,8 +133,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long addEmployee(EmployeeRequest employeeRequest) {
+        String loginId = trimToNull(employeeRequest.getEmployeeLoginId());
+        if (loginId != null && employeeRepository.findByEmployeeLoginId(loginId).isPresent()) {
+            throw new AppException(Constants.ER003, List.of("アカウント名"));
+        }
+
         EmployeeEntity employee = new EmployeeEntity();
-        employee.setEmployeeLoginId(trimToNull(employeeRequest.getEmployeeLoginId()));
+        employee.setEmployeeLoginId(loginId);
         employee.setEmployeeName(trimToNull(employeeRequest.getEmployeeName()));
         employee.setEmployeeNameKana(trimToNull(employeeRequest.getEmployeeNameKana()));
         employee.setEmployeeBirthDate(parseDate(employeeRequest.getEmployeeBirthDate()));
