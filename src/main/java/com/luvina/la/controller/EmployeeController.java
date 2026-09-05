@@ -112,21 +112,8 @@ public class EmployeeController {
     }
 
     /**
-     * API kiểm tra tính hợp lệ dữ liệu nhân viên trước khi xác nhận tạo mới (ADM004/ADM005).
-     *
-     * @param request Dữ liệu thông tin nhân viên cần kiểm tra từ form ADM004
-     * @return ResponseEntity chứa EmployeeResponse với mã thành công
-     */
-    @PostMapping("/validate")
-    public ResponseEntity<EmployeeResponse> validateEmployee(
-            @RequestBody EmployeeRequest request) {
-        employeeValidator.validateForCreate(request);
-        EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, null, null);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
      * API thêm mới thông tin nhân viên vào hệ thống (ADM004/ADM005).
+     * Thực hiện kiểm tra tính hợp lệ của dữ liệu đầu vào trước khi lưu vào cơ sở dữ liệu.
      *
      * @param request Dữ liệu thông tin nhân viên cần thêm mới từ form ADM004
      * @return ResponseEntity chứa EmployeeResponse kèm ID nhân viên và thông báo kết quả
