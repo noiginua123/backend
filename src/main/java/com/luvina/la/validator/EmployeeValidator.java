@@ -6,7 +6,6 @@
 package com.luvina.la.validator;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import com.luvina.la.constant.Constants;
 import com.luvina.la.constant.SortOrder;
-import com.luvina.la.entity.EmployeeEntity;
 import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
@@ -264,8 +262,7 @@ public class EmployeeValidator {
         if (!commonValidator.isValidLoginId(value)) {
             throw new AppException(Constants.ER019);
         }
-        Optional<EmployeeEntity> existing = employeeRepository.findByEmployeeLoginId(value);
-        if (existing.isPresent()) {
+        if (employeeRepository.existsByEmployeeLoginId(value)) {
             throw new AppException(Constants.ER003, List.of(label));
         }
     }

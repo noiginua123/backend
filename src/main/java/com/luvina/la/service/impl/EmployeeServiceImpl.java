@@ -19,13 +19,13 @@ import com.luvina.la.constant.Constants;
 import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.entity.EmployeeCertificationEntity;
 import com.luvina.la.entity.EmployeeEntity;
-import com.luvina.la.exception.AppException;
 import com.luvina.la.mapper.EmployeeMapper;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
 import com.luvina.la.repository.EmployeeCertificationRepository;
 import com.luvina.la.repository.EmployeeRepository;
 import com.luvina.la.service.EmployeeService;
+import com.luvina.la.validator.CommonValidator;
 
 /**
  * Triển khai các nghiệp vụ truy vấn và thêm mới dữ liệu nhân viên.
@@ -52,6 +52,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     /** Bộ mã hóa mật khẩu bảo mật BCrypt. */
     private final PasswordEncoder passwordEncoder;
 
+    /** Validator dùng chung cho các thao tác kiểm tra dữ liệu cơ bản. */
+    private final CommonValidator commonValidator;
+
     /**
      * Khởi tạo service với repository, mapper, repository chứng chỉ và bộ mã hóa mật khẩu.
      *
@@ -59,15 +62,18 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @param employeeMapper Mapper chuyển mảng cột native query sang DTO
      * @param employeeCertificationRepository Repository chứng chỉ của nhân viên
      * @param passwordEncoder Bộ mã hóa mật khẩu
+     * @param commonValidator Validator dùng chung
      */
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
                                EmployeeMapper employeeMapper,
                                EmployeeCertificationRepository employeeCertificationRepository,
-                               PasswordEncoder passwordEncoder) {
+                               PasswordEncoder passwordEncoder,
+                               CommonValidator commonValidator) {
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
         this.employeeCertificationRepository = employeeCertificationRepository;
         this.passwordEncoder = passwordEncoder;
+        this.commonValidator = commonValidator;
     }
 
     /**
@@ -133,18 +139,16 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long addEmployee(EmployeeRequest employeeRequest) {
-        String loginId = trimToNull(employeeRequest.getEmployeeLoginId());
-        if (loginId != null && employeeRepository.findByEmployeeLoginId(loginId).isPresent()) {
-            throw new AppException(Constants.ER003, List.of("アカウント名"));
-        }
-
         EmployeeEntity employee = new EmployeeEntity();
-        employee.setEmployeeLoginId(loginId);
-        employee.setEmployeeName(trimToNull(employeeRequest.getEmployeeName()));
-        employee.setEmployeeNameKana(trimToNull(employeeRequest.getEmployeeNameKana()));
-        employee.setEmployeeBirthDate(parseDate(employeeRequest.getEmployeeBirthDate()));
-        employee.setEmployeeEmail(trimToNull(employeeRequest.getEmployeeEmail()));
-        employee.setEmployeeTelephone(trimToNull(employeeRequest.getEmployeeTelephone()));
+        employee.setEmployeeLoginId(employeeRequest.getEmployeeLoginId().trim());
+        employee.setEmployeeName(employeeRequest.getEmployeeName().trim());
+        employee.setEmployeeNameKana(employeeRequest.getEmployeeNameKana().trim());
+        employee.setEmployeeBirthDate(LocalDate.parse(
+                employeeRequest.getEmployeeBirthDate().trim(),
+                DATE_FORMATTER
+        ));
+        employee.setEmployeeEmail(employeeRequest.getEmployeeEmail().trim());
+        employee.setEmployeeTelephone(employeeRequest.getEmployeeTelephone().trim());
         employee.setEmployeeLoginPassword(passwordEncoder.encode(employeeRequest.getEmployeeLoginPassword()));
         employee.setDepartmentId(Long.valueOf(employeeRequest.getDepartmentId().trim()));
         employee.setRole(Constants.ROLE_USER);
@@ -154,48 +158,25 @@ public class EmployeeServiceImpl implements EmployeeService {
         List<CertificationRequest> certifications = employeeRequest.getCertifications();
         if (certifications != null) {
             for (CertificationRequest certification : certifications) {
-                if (certification == null || isBlank(certification.getCertificationId())) {
+                if (certification == null
+                        || commonValidator.isEmpty(certification.getCertificationId())) {
                     continue;
                 }
                 EmployeeCertificationEntity entity = new EmployeeCertificationEntity();
                 entity.setEmployeeId(savedEmployee.getEmployeeId());
                 entity.setCertificationId(Long.valueOf(certification.getCertificationId().trim()));
-                entity.setStartDate(parseDate(certification.getStartDate()));
-                entity.setEndDate(parseDate(certification.getEndDate()));
+                entity.setStartDate(LocalDate.parse(
+                        certification.getStartDate().trim(),
+                        DATE_FORMATTER
+                ));
+                entity.setEndDate(LocalDate.parse(
+                        certification.getEndDate().trim(),
+                        DATE_FORMATTER
+                ));
                 entity.setScore(new BigDecimal(certification.getScore().trim()));
                 employeeCertificationRepository.save(entity);
             }
         }
         return savedEmployee.getEmployeeId();
-    }
-
-    /**
-     * Chuyển chuỗi ngày yyyy/MM/dd sang LocalDate.
-     *
-     * @param value Chuỗi ngày tháng
-     * @return LocalDate tương ứng
-     */
-    private LocalDate parseDate(String value) {
-        return LocalDate.parse(value.trim(), DATE_FORMATTER);
-    }
-
-    /**
-     * Cắt khoảng trắng hai đầu chuỗi, trả null nếu chuỗi null.
-     *
-     * @param value Chuỗi đầu vào
-     * @return Chuỗi đã trim hoặc null
-     */
-    private String trimToNull(String value) {
-        return value == null ? null : value.trim();
-    }
-
-    /**
-     * Kiểm tra chuỗi null hoặc chỉ gồm khoảng trắng.
-     *
-     * @param value Chuỗi đầu vào
-     * @return true nếu chuỗi rỗng
-     */
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
     }
 }

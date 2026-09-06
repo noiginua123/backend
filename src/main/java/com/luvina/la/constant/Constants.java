@@ -101,9 +101,6 @@ public final class Constants {
     /** Độ dài tối đa của mật khẩu. */
     public static final int PASSWORD_MAX_LENGTH = 50;
 
-    /** Số chữ số tối đa của điểm số chứng chỉ. */
-    public static final int SCORE_MAX_LENGTH = 3;
-
     /** Quyền người dùng thông thường (employee_role = 0). */
     public static final int ROLE_USER = 0;
 

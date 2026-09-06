@@ -32,6 +32,14 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
     Optional<EmployeeEntity> findByEmployeeLoginId(String employeeLoginId);
 
     /**
+     * Kiểm tra tên đăng nhập đã tồn tại hay chưa mà không tải toàn bộ entity.
+     *
+     * @param employeeLoginId Tên tài khoản đăng nhập
+     * @return true nếu tên đăng nhập đã tồn tại
+     */
+    boolean existsByEmployeeLoginId(String employeeLoginId);
+
+    /**
      * Tìm kiếm nhân viên theo ID.
      *
      * @param employeeId ID nhân viên

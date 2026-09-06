@@ -15,13 +15,14 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.luvina.la.constant.Constants;
 import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.mapper.EmployeeMapper;
 import com.luvina.la.repository.EmployeeCertificationRepository;
 import com.luvina.la.repository.EmployeeRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.luvina.la.validator.CommonValidator;
 
 /**
  * Kiểm thử service danh sách nhân viên: uỷ quyền truy vấn Repository và mapping DTO.
@@ -52,7 +53,8 @@ class EmployeeServiceImplTest {
                 employeeRepository,
                 employeeMapper,
                 employeeCertificationRepository,
-                passwordEncoder
+                passwordEncoder,
+                new CommonValidator()
         );
     }
 

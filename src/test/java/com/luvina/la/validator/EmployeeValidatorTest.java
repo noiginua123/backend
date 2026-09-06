@@ -13,14 +13,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.luvina.la.constant.Constants;
-import com.luvina.la.entity.EmployeeEntity;
 import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
@@ -63,8 +61,7 @@ class EmployeeValidatorTest {
 
         when(departmentRepository.existsById(1L)).thenReturn(true);
         when(certificationRepository.existsById(1L)).thenReturn(true);
-        when(employeeRepository.findByEmployeeLoginId("new_user")).thenReturn(Optional.empty());
-        when(employeeRepository.findByEmployeeLoginId("existing_user")).thenReturn(Optional.of(new EmployeeEntity()));
+        when(employeeRepository.existsByEmployeeLoginId("existing_user")).thenReturn(true);
     }
 
     /**
@@ -90,6 +87,26 @@ class EmployeeValidatorTest {
     void shouldThrowER003WhenDuplicateLoginId() {
         EmployeeRequest request = createValidRequest();
         request.setEmployeeLoginId("existing_user");
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> employeeValidator.validateForCreate(request)
+        );
+
+        assertEquals(Constants.ER003, exception.getCode());
+        assertEquals(
+                messageSource.getMessage("field.loginId", null, Locale.getDefault()),
+                exception.getParams().get(0)
+        );
+    }
+
+    /**
+     * Kiểm tra login ID được cắt khoảng trắng trước khi truy vấn trùng lặp.
+     */
+    @Test
+    void shouldThrowER003WhenTrimmedLoginIdIsDuplicate() {
+        EmployeeRequest request = createValidRequest();
+        request.setEmployeeLoginId(" existing_user ");
 
         AppException exception = assertThrows(
                 AppException.class,
