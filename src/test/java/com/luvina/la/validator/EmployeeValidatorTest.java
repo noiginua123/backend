@@ -90,7 +90,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER003, exception.getCode());
@@ -110,7 +110,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER003, exception.getCode());
@@ -126,7 +126,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER002, exception.getCode());
@@ -142,7 +142,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER011, exception.getCode());
@@ -160,7 +160,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER002, exception.getCode());
@@ -178,7 +178,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER011, exception.getCode());
@@ -196,7 +196,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER002, exception.getCode());
@@ -214,7 +214,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER011, exception.getCode());
@@ -232,7 +232,7 @@ class EmployeeValidatorTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> employeeValidator.validateForCreate(request)
+                () -> employeeValidator.validateAddEditEmployee(request)
         );
 
         assertEquals(Constants.ER018, exception.getCode());
@@ -246,7 +246,7 @@ class EmployeeValidatorTest {
         EmployeeRequest request = createValidRequest();
         request.setCertifications(List.of(createValidCertification()));
 
-        assertDoesNotThrow(() -> employeeValidator.validateForCreate(request));
+        assertDoesNotThrow(() -> employeeValidator.validateAddEditEmployee(request));
     }
 
     /**

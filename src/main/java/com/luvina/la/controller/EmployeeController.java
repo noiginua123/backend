@@ -121,7 +121,7 @@ public class EmployeeController {
     @PostMapping
     public ResponseEntity<EmployeeResponse> addEmployee(
             @RequestBody EmployeeRequest request) {
-        employeeValidator.validateForCreate(request);
+        employeeValidator.validateAddEditEmployee(request);
         Long employeeId = employeeService.addEmployee(request);
         MessageResponse message = new MessageResponse(Constants.MSG001, new ArrayList<>());
         EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);

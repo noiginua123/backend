@@ -56,4 +56,12 @@ public interface EmployeeService {
      * @return ID của nhân viên vừa được tạo
      */
     Long addEmployee(EmployeeRequest employeeRequest);
+
+    /**
+     * Kiểm tra sự tồn tại của nhân viên theo ID.
+     *
+     * @param employeeId ID nhân viên cần kiểm tra
+     * @return true nếu nhân viên tồn tại, ngược lại false
+     */
+    boolean checkExistsEmployeeById(Long employeeId);
 }

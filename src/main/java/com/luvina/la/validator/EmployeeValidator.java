@@ -228,12 +228,12 @@ public class EmployeeValidator {
     }
 
     /**
-     * Kiểm tra toàn bộ dữ liệu thêm mới nhân viên (ADM004).
+     * Kiểm tra toàn bộ dữ liệu thêm mới (ADM004) hoặc chỉnh sửa nhân viên.
      *
      * @param request Dữ liệu nhân viên
      * @throws AppException Khi có bất kỳ trường nào không hợp lệ
      */
-    public void validateForCreate(EmployeeRequest request) {
+    public void validateAddEditEmployee(EmployeeRequest request) {
         validateLoginId(request.getEmployeeLoginId());
         validateDepartment(request.getDepartmentId());
         validateFullName(request.getEmployeeName());

@@ -179,4 +179,18 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         return savedEmployee.getEmployeeId();
     }
+
+    /**
+     * Kiểm tra sự tồn tại của nhân viên theo ID.
+     *
+     * @param employeeId ID nhân viên cần kiểm tra
+     * @return true nếu nhân viên tồn tại, ngược lại false
+     */
+    @Override
+    public boolean checkExistsEmployeeById(Long employeeId) {
+        if (employeeId == null) {
+            return false;
+        }
+        return employeeRepository.existsById(employeeId);
+    }
 }

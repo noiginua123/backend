@@ -6,7 +6,11 @@
 package com.luvina.la.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -93,5 +97,42 @@ class EmployeeServiceImplTest {
         verify(employeeRepository).searchEmployees(
                 "%an%", 5L, "ASC", "DESC", "ASC", "employeeName",
                 Constants.ADMIN_LOGIN_ID, 20, 0);
+    }
+
+    /**
+     * Kiểm tra checkExistsEmployeeById trả về true khi nhân viên tồn tại.
+     */
+    @Test
+    void shouldReturnTrueWhenEmployeeExists() {
+        when(employeeRepository.existsById(10L)).thenReturn(true);
+
+        boolean exists = employeeService.checkExistsEmployeeById(10L);
+
+        assertTrue(exists);
+        verify(employeeRepository).existsById(10L);
+    }
+
+    /**
+     * Kiểm tra checkExistsEmployeeById trả về false khi nhân viên không tồn tại.
+     */
+    @Test
+    void shouldReturnFalseWhenEmployeeDoesNotExist() {
+        when(employeeRepository.existsById(99L)).thenReturn(false);
+
+        boolean exists = employeeService.checkExistsEmployeeById(99L);
+
+        assertFalse(exists);
+        verify(employeeRepository).existsById(99L);
+    }
+
+    /**
+     * Kiểm tra checkExistsEmployeeById trả về false khi truyền null.
+     */
+    @Test
+    void shouldReturnFalseWhenEmployeeIdIsNull() {
+        boolean exists = employeeService.checkExistsEmployeeById(null);
+
+        assertFalse(exists);
+        verify(employeeRepository, never()).existsById(any());
     }
 }
