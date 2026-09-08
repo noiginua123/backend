@@ -48,8 +48,7 @@ import com.luvina.la.validator.CommonValidator;
 public class EmployeeServiceImpl implements EmployeeService {
 
     /** Đối tượng định dạng ngày tháng theo hằng số hệ thống. */
-    private static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(Constants.DATE_FORMAT);
 
     /** Repository truy vấn và thao tác dữ liệu nhân viên. */
     private final EmployeeRepository employeeRepository;
@@ -76,27 +75,29 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final MessageSource messageSource;
 
     /**
-     * Khởi tạo service với repository, mapper, repository chứng chỉ, bộ mã hóa mật khẩu,
+     * Khởi tạo service với repository, mapper, repository chứng chỉ, bộ mã hóa mật
+     * khẩu,
      * repository phòng ban và nguồn message.
      *
-     * @param employeeRepository Repository truy vấn dữ liệu nhân viên
-     * @param employeeMapper Mapper chuyển mảng cột native query sang DTO
+     * @param employeeRepository              Repository truy vấn dữ liệu nhân viên
+     * @param employeeMapper                  Mapper chuyển mảng cột native query
+     *                                        sang DTO
      * @param employeeCertificationRepository Repository chứng chỉ của nhân viên
-     * @param passwordEncoder Bộ mã hóa mật khẩu
-     * @param commonValidator Validator dùng chung
-     * @param departmentRepository Repository truy vấn phòng ban
-     * @param certificationRepository Repository truy vấn chứng chỉ
-     * @param messageSource Nguồn cung cấp message
+     * @param passwordEncoder                 Bộ mã hóa mật khẩu
+     * @param commonValidator                 Validator dùng chung
+     * @param departmentRepository            Repository truy vấn phòng ban
+     * @param certificationRepository         Repository truy vấn chứng chỉ
+     * @param messageSource                   Nguồn cung cấp message
      */
     @Autowired
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
-                               EmployeeMapper employeeMapper,
-                               EmployeeCertificationRepository employeeCertificationRepository,
-                               PasswordEncoder passwordEncoder,
-                               CommonValidator commonValidator,
-                               DepartmentRepository departmentRepository,
-                               CertificationRepository certificationRepository,
-                               MessageSource messageSource) {
+            EmployeeMapper employeeMapper,
+            EmployeeCertificationRepository employeeCertificationRepository,
+            PasswordEncoder passwordEncoder,
+            CommonValidator commonValidator,
+            DepartmentRepository departmentRepository,
+            CertificationRepository certificationRepository,
+            MessageSource messageSource) {
         this.employeeRepository = employeeRepository;
         this.employeeMapper = employeeMapper;
         this.employeeCertificationRepository = employeeCertificationRepository;
@@ -110,17 +111,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     /**
      * Constructor tương thích cho các bài kiểm thử đơn vị.
      *
-     * @param employeeRepository Repository truy vấn dữ liệu nhân viên
-     * @param employeeMapper Mapper chuyển mảng cột native query sang DTO
+     * @param employeeRepository              Repository truy vấn dữ liệu nhân viên
+     * @param employeeMapper                  Mapper chuyển mảng cột native query
+     *                                        sang DTO
      * @param employeeCertificationRepository Repository chứng chỉ của nhân viên
-     * @param passwordEncoder Bộ mã hóa mật khẩu
-     * @param commonValidator Validator dùng chung
+     * @param passwordEncoder                 Bộ mã hóa mật khẩu
+     * @param commonValidator                 Validator dùng chung
      */
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
-                               EmployeeMapper employeeMapper,
-                               EmployeeCertificationRepository employeeCertificationRepository,
-                               PasswordEncoder passwordEncoder,
-                               CommonValidator commonValidator) {
+            EmployeeMapper employeeMapper,
+            EmployeeCertificationRepository employeeCertificationRepository,
+            PasswordEncoder passwordEncoder,
+            CommonValidator commonValidator) {
         this(employeeRepository, employeeMapper, employeeCertificationRepository,
                 passwordEncoder, commonValidator, null, null, null);
     }
@@ -137,32 +139,32 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.countEmployees(
                 employeeName,
                 departmentId,
-                Constants.ADMIN_LOGIN_ID
-        );
+                Constants.ADMIN_LOGIN_ID);
     }
 
     /**
      * Lấy và mapping danh sách nhân viên đã sắp xếp, phân trang, loại trừ admin.
      *
-     * @param employeeName Mẫu LIKE tên nhân viên đã escape, hoặc null nếu không lọc
-     * @param departmentId ID phòng ban, hoặc null nếu không lọc
-     * @param ordEmployeeName Hướng sắp xếp theo tên nhân viên (ASC/DESC)
+     * @param employeeName         Mẫu LIKE tên nhân viên đã escape, hoặc null nếu
+     *                             không lọc
+     * @param departmentId         ID phòng ban, hoặc null nếu không lọc
+     * @param ordEmployeeName      Hướng sắp xếp theo tên nhân viên (ASC/DESC)
      * @param ordCertificationName Hướng sắp xếp theo tên chứng chỉ (ASC/DESC)
-     * @param ordEndDate Hướng sắp xếp theo ngày hết hạn (ASC/DESC)
-     * @param prioritySort Cột sắp xếp ưu tiên
-     * @param limit Số bản ghi tối đa
-     * @param offset Vị trí bản ghi bắt đầu
+     * @param ordEndDate           Hướng sắp xếp theo ngày hết hạn (ASC/DESC)
+     * @param prioritySort         Cột sắp xếp ưu tiên
+     * @param limit                Số bản ghi tối đa
+     * @param offset               Vị trí bản ghi bắt đầu
      * @return Danh sách DTO nhân viên
      */
     @Override
     public List<EmployeeListDTO> getEmployees(String employeeName,
-                                              Long departmentId,
-                                              String ordEmployeeName,
-                                              String ordCertificationName,
-                                              String ordEndDate,
-                                              String prioritySort,
-                                              int limit,
-                                              int offset) {
+            Long departmentId,
+            String ordEmployeeName,
+            String ordCertificationName,
+            String ordEndDate,
+            String prioritySort,
+            int limit,
+            int offset) {
         List<Object[]> rows = employeeRepository.searchEmployees(
                 employeeName,
                 departmentId,
@@ -172,8 +174,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 prioritySort,
                 Constants.ADMIN_LOGIN_ID,
                 limit,
-                offset
-        );
+                offset);
         return rows.stream()
                 .map(employeeMapper::toDTO)
                 .collect(Collectors.toList());
@@ -194,8 +195,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setEmployeeNameKana(employeeRequest.getEmployeeNameKana().trim());
         employee.setEmployeeBirthDate(LocalDate.parse(
                 employeeRequest.getEmployeeBirthDate().trim(),
-                DATE_FORMATTER
-        ));
+                DATE_FORMATTER));
         employee.setEmployeeEmail(employeeRequest.getEmployeeEmail().trim());
         employee.setEmployeeTelephone(employeeRequest.getEmployeeTelephone().trim());
         employee.setEmployeeLoginPassword(passwordEncoder.encode(employeeRequest.getEmployeeLoginPassword()));
@@ -216,12 +216,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 entity.setCertificationId(Long.valueOf(certification.getCertificationId().trim()));
                 entity.setStartDate(LocalDate.parse(
                         certification.getStartDate().trim(),
-                        DATE_FORMATTER
-                ));
+                        DATE_FORMATTER));
                 entity.setEndDate(LocalDate.parse(
                         certification.getEndDate().trim(),
-                        DATE_FORMATTER
-                ));
+                        DATE_FORMATTER));
                 entity.setScore(new BigDecimal(certification.getScore().trim()));
                 employeeCertificationRepository.save(entity);
             }
@@ -268,7 +266,8 @@ public class EmployeeServiceImpl implements EmployeeService {
      * Xóa một nhân viên và toàn bộ chứng chỉ liên quan khỏi hệ thống (ADM003).
      *
      * @param employeeId ID của nhân viên cần xóa
-     * @throws AppException Khi không tìm thấy nhân viên (ER014) hoặc cố xóa Admin (ER020)
+     * @throws AppException Khi không tìm thấy nhân viên (ER014) hoặc cố xóa Admin
+     *                      (ER020)
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
