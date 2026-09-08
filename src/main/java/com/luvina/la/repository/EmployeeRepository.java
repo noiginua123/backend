@@ -168,4 +168,38 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
             @Param("limit") int limit,
             @Param("offset") int offset
     );
+
+    /**
+     * Lấy toàn bộ thông tin chi tiết nhân viên, phòng ban và chứng chỉ theo ID bằng một câu query native.
+     *
+     * @param employeeId ID nhân viên cần lấy thông tin chi tiết
+     * @return Danh sách mảng cột chứa thông tin chi tiết
+     */
+    @Query(value = """
+            SELECT
+                e.employee_id AS employeeId,
+                e.employee_login_id AS employeeLoginId,
+                e.employee_name AS employeeName,
+                e.employee_name_kana AS employeeNameKana,
+                DATE_FORMAT(e.employee_birth_date, '%Y/%m/%d') AS employeeBirthDate,
+                e.employee_email AS employeeEmail,
+                e.employee_telephone AS employeeTelephone,
+                d.department_id AS departmentId,
+                d.department_name AS departmentName,
+                c.certification_id AS certificationId,
+                c.certification_name AS certificationName,
+                DATE_FORMAT(ec.start_date, '%Y/%m/%d') AS startDate,
+                DATE_FORMAT(ec.end_date, '%Y/%m/%d') AS endDate,
+                ec.score AS score
+            FROM employees e
+            INNER JOIN departments d
+                ON d.department_id = e.department_id
+            LEFT JOIN employees_certifications ec
+                ON ec.employee_id = e.employee_id
+            LEFT JOIN certifications c
+                ON c.certification_id = ec.certification_id
+            WHERE e.employee_id = :employeeId
+            ORDER BY c.certification_level ASC
+            """, nativeQuery = true)
+    List<Object[]> findEmployeeDetail(@Param("employeeId") Long employeeId);
 }

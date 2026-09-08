@@ -7,6 +7,7 @@ package com.luvina.la.service;
 
 import java.util.List;
 
+import com.luvina.la.dto.EmployeeDetailDTO;
 import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.payload.request.EmployeeRequest;
 
@@ -64,4 +65,19 @@ public interface EmployeeService {
      * @return true nếu nhân viên tồn tại, ngược lại false
      */
     boolean checkExistsEmployeeById(Long employeeId);
+
+    /**
+     * Lấy thông tin chi tiết một nhân viên theo ID (ADM003 / ADM004).
+     *
+     * @param employeeId ID của nhân viên cần lấy chi tiết
+     * @return DTO chứa thông tin chi tiết nhân viên và danh sách chứng chỉ
+     */
+    EmployeeDetailDTO getEmployeeDetail(Long employeeId);
+
+    /**
+     * Xóa một nhân viên và toàn bộ chứng chỉ liên quan khỏi hệ thống (ADM003).
+     *
+     * @param employeeId ID của nhân viên cần xóa
+     */
+    void deleteEmployee(Long employeeId);
 }

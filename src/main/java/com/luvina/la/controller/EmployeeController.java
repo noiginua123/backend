@@ -10,8 +10,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.luvina.la.constant.Constants;
 import com.luvina.la.constant.SortField;
 import com.luvina.la.constant.SortOrder;
+import com.luvina.la.dto.EmployeeDetailDTO;
 import com.luvina.la.dto.EmployeeListDTO;
 import com.luvina.la.payload.request.EmployeeRequest;
 import com.luvina.la.payload.request.EmployeeSearchRequest;
+import com.luvina.la.payload.response.EmployeeDetailResponse;
 import com.luvina.la.payload.response.EmployeeResponse;
 import com.luvina.la.payload.response.ListEmployeeResponse;
 import com.luvina.la.payload.response.MessageResponse;
@@ -124,6 +128,41 @@ public class EmployeeController {
         employeeValidator.validateAddEditEmployee(request);
         Long employeeId = employeeService.addEmployee(request);
         MessageResponse message = new MessageResponse(Constants.MSG001, new ArrayList<>());
+        EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * API lấy thông tin chi tiết một nhân viên theo ID (ADM003 / ADM004).
+     *
+     * @param employeeId ID nhân viên cần lấy thông tin chi tiết
+     * @return ResponseEntity chứa EmployeeDetailResponse
+     */
+    @GetMapping("/{employeeId}")
+    public ResponseEntity<EmployeeDetailResponse> getEmployeeDetail(
+            @PathVariable("employeeId") Long employeeId) {
+        employeeValidator.validateGetEmployeeDetail(employeeId);
+        EmployeeDetailDTO employeeDetailDTO = employeeService.getEmployeeDetail(employeeId);
+        EmployeeDetailResponse response = new EmployeeDetailResponse(
+                Constants.CODE_SUCCESS,
+                employeeDetailDTO
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * API xóa một nhân viên khỏi hệ thống kèm các chứng chỉ liên quan (ADM003).
+     *
+     * @param employeeId ID nhân viên cần xóa
+     * @return ResponseEntity chứa EmployeeResponse với thông báo MSG003
+     */
+    @DeleteMapping("/{employeeId}")
+    public ResponseEntity<EmployeeResponse> deleteEmployee(
+            @PathVariable("employeeId") Long employeeId) {
+        employeeValidator.validateDeleteEmployee(employeeId);
+        employeeService.deleteEmployee(employeeId);
+
+        MessageResponse message = new MessageResponse(Constants.MSG003, new ArrayList<>());
         EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);
         return ResponseEntity.ok(response);
     }

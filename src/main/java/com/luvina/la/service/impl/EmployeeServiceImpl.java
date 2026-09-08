@@ -8,20 +8,31 @@ package com.luvina.la.service.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.luvina.la.constant.Constants;
+import com.luvina.la.dto.EmployeeDetailDTO;
 import com.luvina.la.dto.EmployeeListDTO;
+import com.luvina.la.entity.CertificationEntity;
+import com.luvina.la.entity.DepartmentEntity;
 import com.luvina.la.entity.EmployeeCertificationEntity;
 import com.luvina.la.entity.EmployeeEntity;
+import com.luvina.la.exception.AppException;
 import com.luvina.la.mapper.EmployeeMapper;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
+import com.luvina.la.repository.CertificationRepository;
+import com.luvina.la.repository.DepartmentRepository;
 import com.luvina.la.repository.EmployeeCertificationRepository;
 import com.luvina.la.repository.EmployeeRepository;
 import com.luvina.la.service.EmployeeService;
@@ -55,8 +66,49 @@ public class EmployeeServiceImpl implements EmployeeService {
     /** Validator dùng chung cho các thao tác kiểm tra dữ liệu cơ bản. */
     private final CommonValidator commonValidator;
 
+    /** Repository truy vấn dữ liệu phòng ban. */
+    private final DepartmentRepository departmentRepository;
+
+    /** Repository truy vấn dữ liệu chứng chỉ. */
+    private final CertificationRepository certificationRepository;
+
+    /** Nguồn cung cấp message đa ngôn ngữ. */
+    private final MessageSource messageSource;
+
     /**
-     * Khởi tạo service với repository, mapper, repository chứng chỉ và bộ mã hóa mật khẩu.
+     * Khởi tạo service với repository, mapper, repository chứng chỉ, bộ mã hóa mật khẩu,
+     * repository phòng ban và nguồn message.
+     *
+     * @param employeeRepository Repository truy vấn dữ liệu nhân viên
+     * @param employeeMapper Mapper chuyển mảng cột native query sang DTO
+     * @param employeeCertificationRepository Repository chứng chỉ của nhân viên
+     * @param passwordEncoder Bộ mã hóa mật khẩu
+     * @param commonValidator Validator dùng chung
+     * @param departmentRepository Repository truy vấn phòng ban
+     * @param certificationRepository Repository truy vấn chứng chỉ
+     * @param messageSource Nguồn cung cấp message
+     */
+    @Autowired
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository,
+                               EmployeeMapper employeeMapper,
+                               EmployeeCertificationRepository employeeCertificationRepository,
+                               PasswordEncoder passwordEncoder,
+                               CommonValidator commonValidator,
+                               DepartmentRepository departmentRepository,
+                               CertificationRepository certificationRepository,
+                               MessageSource messageSource) {
+        this.employeeRepository = employeeRepository;
+        this.employeeMapper = employeeMapper;
+        this.employeeCertificationRepository = employeeCertificationRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.commonValidator = commonValidator;
+        this.departmentRepository = departmentRepository;
+        this.certificationRepository = certificationRepository;
+        this.messageSource = messageSource;
+    }
+
+    /**
+     * Constructor tương thích cho các bài kiểm thử đơn vị.
      *
      * @param employeeRepository Repository truy vấn dữ liệu nhân viên
      * @param employeeMapper Mapper chuyển mảng cột native query sang DTO
@@ -69,11 +121,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                                EmployeeCertificationRepository employeeCertificationRepository,
                                PasswordEncoder passwordEncoder,
                                CommonValidator commonValidator) {
-        this.employeeRepository = employeeRepository;
-        this.employeeMapper = employeeMapper;
-        this.employeeCertificationRepository = employeeCertificationRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.commonValidator = commonValidator;
+        this(employeeRepository, employeeMapper, employeeCertificationRepository,
+                passwordEncoder, commonValidator, null, null, null);
     }
 
     /**
@@ -192,5 +241,51 @@ public class EmployeeServiceImpl implements EmployeeService {
             return false;
         }
         return employeeRepository.existsById(employeeId);
+    }
+
+    /**
+     * Lấy thông tin chi tiết một nhân viên theo ID (ADM003 / ADM004).
+     *
+     * @param employeeId ID của nhân viên cần lấy chi tiết
+     * @return DTO chứa thông tin chi tiết nhân viên và danh sách chứng chỉ
+     * @throws AppException Khi không tìm thấy nhân viên (ER013)
+     */
+    @Override
+    public EmployeeDetailDTO getEmployeeDetail(Long employeeId) {
+        List<Object[]> rows = employeeRepository.findEmployeeDetail(employeeId);
+
+        if (rows == null || rows.isEmpty()) {
+            String idLabel = messageSource != null
+                    ? messageSource.getMessage("field.id", null, LocaleContextHolder.getLocale())
+                    : "ＩＤ";
+            throw new AppException(Constants.ER013, List.of(idLabel));
+        }
+
+        return employeeMapper.toDetailDTO(rows);
+    }
+
+    /**
+     * Xóa một nhân viên và toàn bộ chứng chỉ liên quan khỏi hệ thống (ADM003).
+     *
+     * @param employeeId ID của nhân viên cần xóa
+     * @throws AppException Khi không tìm thấy nhân viên (ER014) hoặc cố xóa Admin (ER020)
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteEmployee(Long employeeId) {
+        String idLabel = messageSource != null
+                ? messageSource.getMessage("field.id", null, LocaleContextHolder.getLocale())
+                : "ＩＤ";
+
+        EmployeeEntity employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new AppException(Constants.ER014, List.of(idLabel)));
+
+        if (Constants.ROLE_ADMIN == employee.getRole()
+                || Constants.ADMIN_LOGIN_ID.equals(employee.getEmployeeLoginId())) {
+            throw new AppException(Constants.ER020);
+        }
+
+        employeeCertificationRepository.deleteByEmployeeId(employeeId);
+        employeeRepository.deleteById(employeeId);
     }
 }

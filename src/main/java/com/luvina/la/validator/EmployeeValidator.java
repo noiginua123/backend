@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.luvina.la.constant.Constants;
 import com.luvina.la.constant.SortOrder;
+import com.luvina.la.entity.EmployeeEntity;
 import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
@@ -30,6 +31,9 @@ public class EmployeeValidator {
 
     /** Số chữ số tối đa của ID phòng ban. */
     private static final int MAX_DEPARTMENT_ID_DIGITS = 18;
+
+    /** Khóa nhãn trường ID trong messages.properties. */
+    private static final String FIELD_ID_KEY = "field.id";
 
     /** Khóa nhãn trường phòng ban trong messages.properties. */
     private static final String FIELD_DEPARTMENT_ID_KEY = "field.departmentId";
@@ -457,6 +461,44 @@ public class EmployeeValidator {
         if (!commonValidator.isPositiveNumber(score)) {
             throw new AppException(Constants.ER018, List.of(scoreLabel));
         }
+    }
+
+    /**
+     * Kiểm tra tính hợp lệ của employeeId cho chức năng lấy chi tiết nhân viên (ADM003 / ADM004).
+     *
+     * @param employeeId ID của nhân viên cần lấy chi tiết
+     * @throws AppException ER001 khi employeeId null, ER013 khi nhân viên không tồn tại
+     */
+    public void validateGetEmployeeDetail(Long employeeId) {
+        String idLabel = getLabel(FIELD_ID_KEY);
+        if (employeeId == null) {
+            throw new AppException(Constants.ER001, List.of(idLabel));
+        }
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new AppException(Constants.ER013, List.of(idLabel));
+        }
+    }
+
+    /**
+     * Kiểm tra tính hợp lệ của employeeId cho chức năng xóa nhân viên (ADM003).
+     *
+     * @param employeeId ID của nhân viên cần xóa
+     * @return EmployeeEntity nếu thông tin hợp lệ
+     * @throws AppException ER001 khi employeeId null, ER014 khi không tìm thấy, ER020 khi xóa tài khoản admin
+     */
+    public EmployeeEntity validateDeleteEmployee(Long employeeId) {
+        String idLabel = getLabel(FIELD_ID_KEY);
+        if (employeeId == null) {
+            throw new AppException(Constants.ER001, List.of(idLabel));
+        }
+        EmployeeEntity employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new AppException(Constants.ER014, List.of(idLabel)));
+
+        if (Constants.ROLE_ADMIN == employee.getRole()
+                || Constants.ADMIN_LOGIN_ID.equals(employee.getEmployeeLoginId())) {
+            throw new AppException(Constants.ER020);
+        }
+        return employee;
     }
 
     /**
