@@ -23,7 +23,7 @@ import com.luvina.la.service.CertificationService;
  * @author thanhvinh
  */
 @RestController
-@RequestMapping({"/certification", "/certifications"})
+@RequestMapping("/certification")
 public class CertificationController {
 
     /** Service xử lý nghiệp vụ chứng chỉ. */

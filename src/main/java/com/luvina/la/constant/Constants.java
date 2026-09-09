@@ -45,14 +45,10 @@ public final class Constants {
             "/user/**",
             "/employee/**",
             "/employee",
-            "/employees/**",
-            "/employees",
             "/department/**",
             "/department",
-            "/departments/**",
-            "/departments",
             "/certification/**",
-            "/certifications/**"
+            "/certification"
     };
 
     /** Danh sách các thuộc tính của Employee được đóng gói vào claims của JWT Token. */

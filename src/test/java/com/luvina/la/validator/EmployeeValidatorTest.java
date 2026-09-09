@@ -7,6 +7,8 @@ package com.luvina.la.validator;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.luvina.la.constant.Constants;
+import com.luvina.la.dto.MessageDTO;
 import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
@@ -81,22 +84,20 @@ class EmployeeValidatorTest {
     }
 
     /**
-     * Kiểm tra khi account đã tồn tại thì ném ngoại lệ với mã ER003.
+     * Kiểm tra khi account đã tồn tại thì trả về MessageDTO với mã ER003.
      */
     @Test
-    void shouldThrowER003WhenDuplicateLoginId() {
+    void shouldReturnER003WhenDuplicateLoginId() {
         EmployeeRequest request = createValidRequest();
         request.setEmployeeLoginId("existing_user");
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER003, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER003, result.getCode());
         assertEquals(
                 messageSource.getMessage("field.loginId", null, Locale.getDefault()),
-                exception.getParams().get(0)
+                result.getParams().get(0)
         );
     }
 
@@ -104,149 +105,135 @@ class EmployeeValidatorTest {
      * Kiểm tra login ID được cắt khoảng trắng trước khi truy vấn trùng lặp.
      */
     @Test
-    void shouldThrowER003WhenTrimmedLoginIdIsDuplicate() {
+    void shouldReturnER003WhenTrimmedLoginIdIsDuplicate() {
         EmployeeRequest request = createValidRequest();
         request.setEmployeeLoginId(" existing_user ");
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER003, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER003, result.getCode());
     }
 
     /**
-     * Kiểm tra khi ngày sinh trống thì ném ngoại lệ ER002.
+     * Kiểm tra khi ngày sinh trống thì trả về MessageDTO với mã ER002.
      */
     @Test
-    void shouldThrowER002WhenBirthDateIsEmpty() {
+    void shouldReturnER002WhenBirthDateIsEmpty() {
         EmployeeRequest request = createValidRequest();
         request.setEmployeeBirthDate("");
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER002, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER002, result.getCode());
     }
 
     /**
-     * Kiểm tra khi ngày sinh không hợp lệ thì ném ngoại lệ ER011.
+     * Kiểm tra khi ngày sinh không hợp lệ thì trả về MessageDTO với mã ER011.
      */
     @Test
-    void shouldThrowER011WhenBirthDateIsInvalid() {
+    void shouldReturnER011WhenBirthDateIsInvalid() {
         EmployeeRequest request = createValidRequest();
         request.setEmployeeBirthDate("2024/02/30");
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER011, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER011, result.getCode());
     }
 
     /**
-     * Kiểm tra khi ngày cấp chứng chỉ trống thì ném ngoại lệ ER002.
+     * Kiểm tra khi ngày cấp chứng chỉ trống thì trả về MessageDTO với mã ER002.
      */
     @Test
-    void shouldThrowER002WhenCertificationStartDateIsEmpty() {
+    void shouldReturnER002WhenCertificationStartDateIsEmpty() {
         EmployeeRequest request = createValidRequest();
         CertificationRequest cert = createValidCertification();
         cert.setStartDate("");
         request.setCertifications(List.of(cert));
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER002, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER002, result.getCode());
     }
 
     /**
-     * Kiểm tra khi ngày cấp chứng chỉ không hợp lệ thì ném ngoại lệ ER011.
+     * Kiểm tra khi ngày cấp chứng chỉ không hợp lệ thì trả về MessageDTO với mã ER011.
      */
     @Test
-    void shouldThrowER011WhenCertificationStartDateIsInvalid() {
+    void shouldReturnER011WhenCertificationStartDateIsInvalid() {
         EmployeeRequest request = createValidRequest();
         CertificationRequest cert = createValidCertification();
         cert.setStartDate("2023/13/01");
         request.setCertifications(List.of(cert));
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER011, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER011, result.getCode());
     }
 
     /**
-     * Kiểm tra khi ngày hết hạn chứng chỉ trống thì ném ngoại lệ ER002.
+     * Kiểm tra khi ngày hết hạn chứng chỉ trống thì trả về MessageDTO với mã ER002.
      */
     @Test
-    void shouldThrowER002WhenCertificationEndDateIsEmpty() {
+    void shouldReturnER002WhenCertificationEndDateIsEmpty() {
         EmployeeRequest request = createValidRequest();
         CertificationRequest cert = createValidCertification();
         cert.setEndDate("");
         request.setCertifications(List.of(cert));
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER002, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER002, result.getCode());
     }
 
     /**
-     * Kiểm tra khi ngày hết hạn chứng chỉ không hợp lệ thì ném ngoại lệ ER011.
+     * Kiểm tra khi ngày hết hạn chứng chỉ không hợp lệ thì trả về MessageDTO với mã ER011.
      */
     @Test
-    void shouldThrowER011WhenCertificationEndDateIsInvalid() {
+    void shouldReturnER011WhenCertificationEndDateIsInvalid() {
         EmployeeRequest request = createValidRequest();
         CertificationRequest cert = createValidCertification();
         cert.setEndDate("invalid_date");
         request.setCertifications(List.of(cert));
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER011, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER011, result.getCode());
     }
 
     /**
-     * Kiểm tra khi điểm số không phải số dương thì ném ngoại lệ ER018.
+     * Kiểm tra khi điểm số không phải số dương thì trả về MessageDTO với mã ER018.
      */
     @Test
-    void shouldThrowER018WhenCertificationScoreIsNotPositive() {
+    void shouldReturnER018WhenCertificationScoreIsNotPositive() {
         EmployeeRequest request = createValidRequest();
         CertificationRequest cert = createValidCertification();
         cert.setScore("abc");
         request.setCertifications(List.of(cert));
 
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.validateAddEditEmployee(request)
-        );
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
-        assertEquals(Constants.ER018, exception.getCode());
+        assertNotNull(result);
+        assertEquals(Constants.ER018, result.getCode());
     }
 
     /**
-     * Kiểm tra khi dữ liệu hợp lệ thì validate thành công và không ném ngoại lệ.
+     * Kiểm tra khi dữ liệu hợp lệ thì validate thành công và trả về null.
      */
     @Test
     void shouldPassWhenValidRequest() {
         EmployeeRequest request = createValidRequest();
         request.setCertifications(List.of(createValidCertification()));
 
-        assertDoesNotThrow(() -> employeeValidator.validateAddEditEmployee(request));
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request);
+
+        assertNull(result);
     }
 
     /**

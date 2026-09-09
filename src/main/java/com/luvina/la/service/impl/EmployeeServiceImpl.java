@@ -202,7 +202,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDepartmentId(Long.valueOf(employeeRequest.getDepartmentId().trim()));
         employee.setRole(Constants.ROLE_USER);
 
-        EmployeeEntity savedEmployee = employeeRepository.save(employee);
+        EmployeeEntity employeeEntity = employeeRepository.save(employee);
 
         List<CertificationRequest> certifications = employeeRequest.getCertifications();
         if (certifications != null) {
@@ -212,7 +212,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     continue;
                 }
                 EmployeeCertificationEntity entity = new EmployeeCertificationEntity();
-                entity.setEmployeeId(savedEmployee.getEmployeeId());
+                entity.setEmployeeId(employeeEntity.getEmployeeId());
                 entity.setCertificationId(Long.valueOf(certification.getCertificationId().trim()));
                 entity.setStartDate(LocalDate.parse(
                         certification.getStartDate().trim(),
@@ -224,7 +224,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employeeCertificationRepository.save(entity);
             }
         }
-        return savedEmployee.getEmployeeId();
+        return employeeEntity.getEmployeeId();
     }
 
     /**

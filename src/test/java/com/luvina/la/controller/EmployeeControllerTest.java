@@ -6,6 +6,7 @@
 package com.luvina.la.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -21,11 +22,14 @@ import java.util.Locale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.StaticMessageSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.luvina.la.constant.Constants;
 import com.luvina.la.constant.SortField;
+import com.luvina.la.payload.request.EmployeeRequest;
 import com.luvina.la.payload.request.EmployeeSearchRequest;
+import com.luvina.la.payload.response.EmployeeResponse;
 import com.luvina.la.payload.response.ListEmployeeResponse;
 import com.luvina.la.repository.CertificationRepository;
 import com.luvina.la.repository.DepartmentRepository;
@@ -78,6 +82,7 @@ class EmployeeControllerTest {
         StaticMessageSource messageSource = new StaticMessageSource();
         messageSource.addMessage("field.offset", Locale.getDefault(), "offset");
         messageSource.addMessage("field.limit", Locale.getDefault(), "limit");
+        messageSource.addMessage("field.loginId", Locale.getDefault(), "アカウント名");
         return messageSource;
     }
 
@@ -161,5 +166,22 @@ class EmployeeControllerTest {
                 Constants.DEFAULT_EMPLOYEE_PAGE_SIZE,
                 0
         );
+    }
+
+    /**
+     * Kiểm tra khi validate dữ liệu thêm mới thất bại thì trả về HTTP 500 kèm mã lỗi.
+     */
+    @Test
+    void shouldReturn500WhenAddEmployeeValidationFails() {
+        EmployeeRequest invalidRequest = new EmployeeRequest();
+
+        ResponseEntity<EmployeeResponse> response = employeeController.addEmployee(invalidRequest);
+
+        verify(employeeService, never()).addEmployee(any());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(Constants.CODE_ERROR, response.getBody().getCode());
+        assertNotNull(response.getBody().getMessage());
+        assertEquals(Constants.ER001, response.getBody().getMessage().getCode());
     }
 }

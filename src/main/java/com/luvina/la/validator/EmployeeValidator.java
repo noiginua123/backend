@@ -5,6 +5,7 @@
  */
 package com.luvina.la.validator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.MessageSource;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.luvina.la.constant.Constants;
 import com.luvina.la.constant.SortOrder;
+import com.luvina.la.dto.MessageDTO;
 import com.luvina.la.entity.EmployeeEntity;
 import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.request.CertificationRequest;
@@ -235,232 +237,308 @@ public class EmployeeValidator {
      * Kiểm tra toàn bộ dữ liệu thêm mới (ADM004) hoặc chỉnh sửa nhân viên.
      *
      * @param request Dữ liệu nhân viên
-     * @throws AppException Khi có bất kỳ trường nào không hợp lệ
+     * @return MessageDTO chứa thông tin lỗi nếu không hợp lệ, hoặc null nếu hợp lệ
      */
-    public void validateAddEditEmployee(EmployeeRequest request) {
-        validateLoginId(request.getEmployeeLoginId());
-        validateDepartment(request.getDepartmentId());
-        validateFullName(request.getEmployeeName());
-        validateNameKana(request.getEmployeeNameKana());
-        validateBirthDate(request.getEmployeeBirthDate());
-        validateEmail(request.getEmployeeEmail());
-        validateTelephone(request.getEmployeeTelephone());
-        validatePassword(request.getEmployeeLoginPassword());
-        validateCertifications(request.getCertifications());
+    public MessageDTO validateAddEditEmployee(EmployeeRequest request) {
+        MessageDTO messageDto = validateLoginId(request.getEmployeeLoginId());
+        if (messageDto == null) {
+            messageDto = validateDepartment(request.getDepartmentId());
+        }
+        if (messageDto == null) {
+            messageDto = validateFullName(request.getEmployeeName());
+        }
+        if (messageDto == null) {
+            messageDto = validateNameKana(request.getEmployeeNameKana());
+        }
+        if (messageDto == null) {
+            messageDto = validateBirthDate(request.getEmployeeBirthDate());
+        }
+        if (messageDto == null) {
+            messageDto = validateEmail(request.getEmployeeEmail());
+        }
+        if (messageDto == null) {
+            messageDto = validateTelephone(request.getEmployeeTelephone());
+        }
+        if (messageDto == null) {
+            messageDto = validatePassword(request.getEmployeeLoginPassword());
+        }
+        if (messageDto == null) {
+            messageDto = validateCertifications(request.getCertifications());
+        }
+
+        return messageDto;
     }
 
     /**
      * Kiểm tra login id: bắt buộc, tối đa 50, đúng định dạng, chưa tồn tại.
      *
      * @param loginId Login id
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateLoginId(String loginId) {
+    private MessageDTO validateLoginId(String loginId) {
+        MessageDTO messageDto = null;
         String label = getLabel(FIELD_LOGIN_ID_KEY);
         if (commonValidator.isEmpty(loginId)) {
-            throw new AppException(Constants.ER001, List.of(label));
+            messageDto = buildMessage(Constants.ER001, label);
+        } else if (commonValidator.isMaxLength(loginId.trim(), Constants.MAX_LENGTH_50)) {
+            messageDto = buildMessage(Constants.ER006, Constants.MAX_LENGTH_50, label);
+        } else if (!commonValidator.isValidLoginId(loginId.trim())) {
+            messageDto = buildMessage(Constants.ER019);
+        } else if (employeeRepository.existsByEmployeeLoginId(loginId.trim())) {
+            messageDto = buildMessage(Constants.ER003, label);
         }
-        String value = loginId.trim();
-        if (commonValidator.isMaxLength(value, Constants.MAX_LENGTH_50)) {
-            throw new AppException(Constants.ER006, List.of(Constants.MAX_LENGTH_50, label));
-        }
-        if (!commonValidator.isValidLoginId(value)) {
-            throw new AppException(Constants.ER019);
-        }
-        if (employeeRepository.existsByEmployeeLoginId(value)) {
-            throw new AppException(Constants.ER003, List.of(label));
-        }
+        return messageDto;
     }
 
     /**
      * Kiểm tra phòng ban: bắt buộc chọn và phải tồn tại.
      *
      * @param departmentId ID phòng ban dạng chuỗi
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateDepartment(String departmentId) {
+    private MessageDTO validateDepartment(String departmentId) {
+        MessageDTO messageDto = null;
         String label = getLabel(FIELD_GROUP_KEY);
         if (commonValidator.isEmpty(departmentId)) {
-            throw new AppException(Constants.ER002, List.of(label));
+            messageDto = buildMessage(Constants.ER002, label);
+        } else if (!isExistingDepartment(departmentId)) {
+            messageDto = buildMessage(Constants.ER004, label);
         }
-        Long id;
-        try {
-            id = Long.valueOf(departmentId.trim());
-        } catch (NumberFormatException e) {
-            throw new AppException(Constants.ER004, List.of(label));
-        }
-        if (!departmentRepository.existsById(id)) {
-            throw new AppException(Constants.ER004, List.of(label));
-        }
+        return messageDto;
     }
 
     /**
      * Kiểm tra họ tên: bắt buộc, tối đa 125 ký tự.
      *
      * @param fullName Họ tên
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateFullName(String fullName) {
+    private MessageDTO validateFullName(String fullName) {
+        MessageDTO messageDto = null;
         String label = getLabel(FIELD_FULLNAME_KEY);
         if (commonValidator.isEmpty(fullName)) {
-            throw new AppException(Constants.ER001, List.of(label));
+            messageDto = buildMessage(Constants.ER001, label);
+        } else if (commonValidator.isMaxLength(fullName.trim(), Constants.MAX_LENGTH_125)) {
+            messageDto = buildMessage(Constants.ER006, Constants.MAX_LENGTH_125, label);
         }
-        if (commonValidator.isMaxLength(fullName.trim(), Constants.MAX_LENGTH_125)) {
-            throw new AppException(Constants.ER006, List.of(Constants.MAX_LENGTH_125, label));
-        }
+        return messageDto;
     }
 
     /**
      * Kiểm tra tên kana: bắt buộc, tối đa 125, đúng katakana.
      *
      * @param nameKana Tên kana
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateNameKana(String nameKana) {
+    private MessageDTO validateNameKana(String nameKana) {
+        MessageDTO messageDto = null;
         String label = getLabel(FIELD_FULLNAME_KANA_KEY);
         if (commonValidator.isEmpty(nameKana)) {
-            throw new AppException(Constants.ER001, List.of(label));
+            messageDto = buildMessage(Constants.ER001, label);
+        } else if (commonValidator.isMaxLength(nameKana.trim(), Constants.MAX_LENGTH_125)) {
+            messageDto = buildMessage(Constants.ER006, Constants.MAX_LENGTH_125, label);
+        } else if (!commonValidator.isKatakana(nameKana.trim())) {
+            messageDto = buildMessage(Constants.ER009, label);
         }
-        String value = nameKana.trim();
-        if (commonValidator.isMaxLength(value, Constants.MAX_LENGTH_125)) {
-            throw new AppException(Constants.ER006, List.of(Constants.MAX_LENGTH_125, label));
-        }
-        if (!commonValidator.isKatakana(value)) {
-            throw new AppException(Constants.ER009, List.of(label));
-        }
+        return messageDto;
     }
 
     /**
      * Kiểm tra ngày sinh: bắt buộc chọn, đúng định dạng yyyy/MM/dd và ngày hợp lệ.
      *
      * @param birthDate Ngày sinh
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateBirthDate(String birthDate) {
+    private MessageDTO validateBirthDate(String birthDate) {
+        MessageDTO messageDto = null;
         String label = getLabel(FIELD_BIRTH_DATE_KEY);
         if (commonValidator.isEmpty(birthDate)) {
-            throw new AppException(Constants.ER002, List.of(label));
+            messageDto = buildMessage(Constants.ER002, label);
+        } else if (!commonValidator.isValidDate(birthDate.trim())) {
+            messageDto = buildMessage(Constants.ER011, label);
         }
-        if (!commonValidator.isValidDate(birthDate.trim())) {
-            throw new AppException(Constants.ER011, List.of(label));
-        }
+        return messageDto;
     }
 
     /**
      * Kiểm tra email: bắt buộc, tối đa 125, đúng định dạng email.
      *
      * @param email Email
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateEmail(String email) {
+    private MessageDTO validateEmail(String email) {
+        MessageDTO messageDto = null;
         String label = getLabel(FIELD_EMAIL_KEY);
         if (commonValidator.isEmpty(email)) {
-            throw new AppException(Constants.ER001, List.of(label));
+            messageDto = buildMessage(Constants.ER001, label);
+        } else if (commonValidator.isMaxLength(email.trim(), Constants.MAX_LENGTH_125)) {
+            messageDto = buildMessage(Constants.ER006, Constants.MAX_LENGTH_125, label);
+        } else if (!commonValidator.isValidEmail(email.trim())) {
+            messageDto = buildMessage(Constants.ER005, label, EMAIL_FORMAT_TOKEN);
         }
-        String value = email.trim();
-        if (commonValidator.isMaxLength(value, Constants.MAX_LENGTH_125)) {
-            throw new AppException(Constants.ER006, List.of(Constants.MAX_LENGTH_125, label));
-        }
-        if (!commonValidator.isValidEmail(value)) {
-            throw new AppException(Constants.ER005, List.of(label, EMAIL_FORMAT_TOKEN));
-        }
+        return messageDto;
     }
 
     /**
      * Kiểm tra số điện thoại: bắt buộc, tối đa 50, chỉ ký tự 1 byte.
      *
      * @param telephone Số điện thoại
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateTelephone(String telephone) {
+    private MessageDTO validateTelephone(String telephone) {
+        MessageDTO messageDto = null;
         String label = getLabel(FIELD_TELEPHONE_KEY);
         if (commonValidator.isEmpty(telephone)) {
-            throw new AppException(Constants.ER001, List.of(label));
+            messageDto = buildMessage(Constants.ER001, label);
+        } else if (commonValidator.isMaxLength(telephone.trim(), Constants.MAX_LENGTH_50)) {
+            messageDto = buildMessage(Constants.ER006, Constants.MAX_LENGTH_50, label);
+        } else if (!commonValidator.isHalfSize(telephone.trim())) {
+            messageDto = buildMessage(Constants.ER008, label);
         }
-        String value = telephone.trim();
-        if (commonValidator.isMaxLength(value, Constants.MAX_LENGTH_50)) {
-            throw new AppException(Constants.ER006, List.of(Constants.MAX_LENGTH_50, label));
-        }
-        if (!commonValidator.isHalfSize(value)) {
-            throw new AppException(Constants.ER008, List.of(label));
-        }
+        return messageDto;
     }
 
     /**
      * Kiểm tra mật khẩu: bắt buộc, độ dài 8 - 50.
      *
      * @param password Mật khẩu
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validatePassword(String password) {
+    private MessageDTO validatePassword(String password) {
+        MessageDTO messageDto = null;
         String label = getLabel(FIELD_PASSWORD_KEY);
         if (commonValidator.isEmpty(password)) {
-            throw new AppException(Constants.ER001, List.of(label));
-        }
-        if (!commonValidator.isLengthInRange(password, Constants.PASSWORD_MIN_LENGTH, Constants.PASSWORD_MAX_LENGTH)) {
-            throw new AppException(
+            messageDto = buildMessage(Constants.ER001, label);
+        } else if (!commonValidator.isLengthInRange(password, Constants.PASSWORD_MIN_LENGTH, Constants.PASSWORD_MAX_LENGTH)) {
+            messageDto = buildMessage(
                     Constants.ER007,
-                    List.of(label, Constants.PASSWORD_MIN_LENGTH, Constants.PASSWORD_MAX_LENGTH)
+                    label,
+                    Constants.PASSWORD_MIN_LENGTH,
+                    Constants.PASSWORD_MAX_LENGTH
             );
         }
+        return messageDto;
     }
 
     /**
      * Kiểm tra danh sách chứng chỉ (0 hoặc 1 phần tử ở ADM004).
      *
      * @param certifications Danh sách chứng chỉ
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateCertifications(List<CertificationRequest> certifications) {
-        if (certifications == null || certifications.isEmpty()) {
-            return;
+    private MessageDTO validateCertifications(List<CertificationRequest> certifications) {
+        MessageDTO messageDto = null;
+        if (certifications != null && !certifications.isEmpty()) {
+            for (CertificationRequest certification : certifications) {
+                messageDto = validateCertification(certification);
+                if (messageDto != null) {
+                    break;
+                }
+            }
         }
-        for (CertificationRequest certification : certifications) {
-            validateCertification(certification);
-        }
+        return messageDto;
     }
 
     /**
      * Kiểm tra một chứng chỉ: bỏ qua nếu chưa chọn; nếu đã chọn thì kiểm tra đầy đủ.
      *
      * @param certification Thông tin chứng chỉ
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private void validateCertification(CertificationRequest certification) {
+    private MessageDTO validateCertification(CertificationRequest certification) {
         if (certification == null || commonValidator.isEmpty(certification.getCertificationId())) {
-            return;
+            return null;
         }
+
+        MessageDTO messageDto = validateCertificationId(certification.getCertificationId());
+        if (messageDto == null) {
+            messageDto = validateStartDate(certification.getStartDate());
+        }
+        if (messageDto == null) {
+            messageDto = validateEndDate(certification.getStartDate(), certification.getEndDate());
+        }
+        if (messageDto == null) {
+            messageDto = validateScore(certification.getScore());
+        }
+        return messageDto;
+    }
+
+    /**
+     * Kiểm tra ID chứng chỉ: bắt buộc chọn, số nguyên dương, tồn tại trong DB.
+     *
+     * @param certificationId ID chứng chỉ cần kiểm tra
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
+     */
+    private MessageDTO validateCertificationId(String certificationId) {
+        MessageDTO messageDto = null;
         String certLabel = getLabel(FIELD_CERTIFICATION_KEY);
+
+        if (commonValidator.isEmpty(certificationId)) {
+            messageDto = buildMessage(Constants.ER001, certLabel);
+        } else if (!isPositiveLong(certificationId)) {
+            messageDto = buildMessage(Constants.ER018, certLabel);
+        } else if (!certificationRepository.existsById(Long.valueOf(certificationId.trim()))) {
+            messageDto = buildMessage(Constants.ER004, certLabel);
+        }
+        return messageDto;
+    }
+
+    /**
+     * Kiểm tra ngày cấp chứng chỉ: bắt buộc chọn, đúng định dạng yyyy/MM/dd và hợp lệ.
+     *
+     * @param startDate Ngày cấp chứng chỉ
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
+     */
+    private MessageDTO validateStartDate(String startDate) {
+        MessageDTO messageDto = null;
         String startLabel = getLabel(FIELD_START_DATE_KEY);
+
+        if (commonValidator.isEmpty(startDate)) {
+            messageDto = buildMessage(Constants.ER002, startLabel);
+        } else if (!commonValidator.isValidDate(startDate.trim())) {
+            messageDto = buildMessage(Constants.ER011, startLabel);
+        }
+        return messageDto;
+    }
+
+    /**
+     * Kiểm tra ngày hết hạn chứng chỉ: bắt buộc chọn, đúng định dạng yyyy/MM/dd, hợp lệ và sau ngày cấp.
+     *
+     * @param startDate Ngày cấp chứng chỉ
+     * @param endDate Ngày hết hạn chứng chỉ
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
+     */
+    private MessageDTO validateEndDate(String startDate, String endDate) {
+        MessageDTO messageDto = null;
         String endLabel = getLabel(FIELD_END_DATE_KEY);
+
+        if (commonValidator.isEmpty(endDate)) {
+            messageDto = buildMessage(Constants.ER002, endLabel);
+        } else if (!commonValidator.isValidDate(endDate.trim())) {
+            messageDto = buildMessage(Constants.ER011, endLabel);
+        } else if (commonValidator.isValidDate(startDate != null ? startDate.trim() : "")
+                && commonValidator.isEndDateBeforeStartDate(startDate.trim(), endDate.trim())) {
+            messageDto = buildMessage(Constants.ER012);
+        }
+        return messageDto;
+    }
+
+    /**
+     * Kiểm tra điểm số chứng chỉ: bắt buộc, số dương.
+     *
+     * @param score Điểm số chứng chỉ
+     * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
+     */
+    private MessageDTO validateScore(String score) {
+        MessageDTO messageDto = null;
         String scoreLabel = getLabel(FIELD_SCORE_KEY);
 
-        Long certificationId;
-        try {
-            certificationId = Long.valueOf(certification.getCertificationId().trim());
-        } catch (NumberFormatException e) {
-            throw new AppException(Constants.ER004, List.of(certLabel));
+        if (commonValidator.isEmpty(score)) {
+            messageDto = buildMessage(Constants.ER001, scoreLabel);
+        } else if (!commonValidator.isPositiveNumber(score.trim())) {
+            messageDto = buildMessage(Constants.ER018, scoreLabel);
         }
-        if (!certificationRepository.existsById(certificationId)) {
-            throw new AppException(Constants.ER004, List.of(certLabel));
-        }
-
-        if (commonValidator.isEmpty(certification.getStartDate())) {
-            throw new AppException(Constants.ER002, List.of(startLabel));
-        }
-        if (!commonValidator.isValidDate(certification.getStartDate().trim())) {
-            throw new AppException(Constants.ER011, List.of(startLabel));
-        }
-
-        if (commonValidator.isEmpty(certification.getEndDate())) {
-            throw new AppException(Constants.ER002, List.of(endLabel));
-        }
-        if (!commonValidator.isValidDate(certification.getEndDate().trim())) {
-            throw new AppException(Constants.ER011, List.of(endLabel));
-        }
-        if (commonValidator.isEndDateBeforeStartDate(
-                certification.getStartDate().trim(),
-                certification.getEndDate().trim())) {
-            throw new AppException(Constants.ER012);
-        }
-
-        if (commonValidator.isEmpty(certification.getScore())) {
-            throw new AppException(Constants.ER001, List.of(scoreLabel));
-        }
-        String score = certification.getScore().trim();
-        if (!commonValidator.isPositiveNumber(score)) {
-            throw new AppException(Constants.ER018, List.of(scoreLabel));
-        }
+        return messageDto;
     }
 
     /**
@@ -470,12 +548,71 @@ public class EmployeeValidator {
      * @throws AppException ER001 khi employeeId null, ER013 khi nhân viên không tồn tại
      */
     public void validateGetEmployeeDetail(Long employeeId) {
+        MessageDTO messageDto = null;
         String idLabel = getLabel(FIELD_ID_KEY);
         if (employeeId == null) {
-            throw new AppException(Constants.ER001, List.of(idLabel));
+            messageDto = buildMessage(Constants.ER001, idLabel);
+        } else if (!employeeRepository.existsById(employeeId)) {
+            messageDto = buildMessage(Constants.ER013, idLabel);
         }
-        if (!employeeRepository.existsById(employeeId)) {
-            throw new AppException(Constants.ER013, List.of(idLabel));
+        if (messageDto != null) {
+            throw new AppException(messageDto.getCode(), messageDto.getParams());
+        }
+    }
+
+    /**
+     * Tạo đối tượng MessageDTO từ mã lỗi và danh sách tham số.
+     *
+     * @param code Mã lỗi (ví dụ: ER001, ER006)
+     * @param params Danh sách tham số thay thế trong thông báo lỗi
+     * @return Đối tượng MessageDTO chứa mã lỗi và tham số
+     */
+    private MessageDTO buildMessage(String code, Object... params) {
+        List<Object> paramList = new ArrayList<>();
+        if (params != null) {
+            for (Object param : params) {
+                if (param != null) {
+                    paramList.add(param);
+                }
+            }
+        }
+        return new MessageDTO(code, paramList);
+    }
+
+    /**
+     * Kiểm tra một chuỗi có phải là số nguyên dương hợp lệ (dạng bán giác).
+     *
+     * @param value Chuỗi cần kiểm tra
+     * @return true nếu là số nguyên dương hợp lệ, false nếu không
+     */
+    private boolean isPositiveLong(String value) {
+        if (commonValidator.isEmpty(value)) {
+            return false;
+        }
+        String trimmed = value.trim();
+        if (!commonValidator.isHalfWidthNumber(trimmed, MAX_DEPARTMENT_ID_DIGITS)) {
+            return false;
+        }
+        try {
+            long number = Long.parseLong(trimmed);
+            return number > 0L;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Kiểm tra phòng ban có tồn tại trong cơ sở dữ liệu hay không.
+     *
+     * @param departmentId ID phòng ban dạng chuỗi
+     * @return true nếu phòng ban tồn tại, ngược lại false
+     */
+    private boolean isExistingDepartment(String departmentId) {
+        try {
+            Long id = Long.valueOf(departmentId.trim());
+            return departmentRepository.existsById(id);
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 

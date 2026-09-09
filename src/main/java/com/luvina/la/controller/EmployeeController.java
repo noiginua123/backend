@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,7 @@ import com.luvina.la.constant.SortField;
 import com.luvina.la.constant.SortOrder;
 import com.luvina.la.dto.EmployeeDetailDTO;
 import com.luvina.la.dto.EmployeeListDTO;
+import com.luvina.la.dto.MessageDTO;
 import com.luvina.la.payload.request.EmployeeRequest;
 import com.luvina.la.payload.request.EmployeeSearchRequest;
 import com.luvina.la.payload.response.EmployeeDetailResponse;
@@ -43,7 +45,7 @@ import com.luvina.la.validator.EmployeeValidator;
  * @author thanhvinh
  */
 @RestController
-@RequestMapping({"/employee", "/employees"})
+@RequestMapping("/employee")
 public class EmployeeController {
 
     /** Service xử lý nghiệp vụ liên quan đến nhân viên. */
@@ -125,7 +127,13 @@ public class EmployeeController {
     @PostMapping
     public ResponseEntity<EmployeeResponse> addEmployee(
             @RequestBody EmployeeRequest request) {
-        employeeValidator.validateAddEditEmployee(request);
+        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request);
+        if (messageDto != null) {
+            MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
+            EmployeeResponse errorResponse = new EmployeeResponse(Constants.CODE_ERROR, null, messageResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+
         Long employeeId = employeeService.addEmployee(request);
         MessageResponse message = new MessageResponse(Constants.MSG001, new ArrayList<>());
         EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);

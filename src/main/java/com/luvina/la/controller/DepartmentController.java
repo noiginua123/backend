@@ -23,7 +23,7 @@ import com.luvina.la.service.DepartmentService;
  * @author thanhvinh
  */
 @RestController
-@RequestMapping({"/department", "/departments"})
+@RequestMapping("/department")
 public class DepartmentController {
 
     private final DepartmentService departmentService;
