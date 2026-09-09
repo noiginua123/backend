@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -136,6 +137,29 @@ public class EmployeeController {
 
         Long employeeId = employeeService.addEmployee(request);
         MessageResponse message = new MessageResponse(Constants.MSG001, new ArrayList<>());
+        EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * API cập nhật thông tin nhân viên vào hệ thống (ADM004).
+     * Thực hiện kiểm tra tính hợp lệ của dữ liệu đầu vào trước khi cập nhật vào cơ sở dữ liệu.
+     *
+     * @param request Dữ liệu thông tin nhân viên cần chỉnh sửa từ form ADM004
+     * @return ResponseEntity chứa EmployeeResponse kèm ID nhân viên và thông báo kết quả (MSG002)
+     */
+    @PutMapping
+    public ResponseEntity<EmployeeResponse> updateEmployee(
+            @RequestBody EmployeeRequest request) {
+        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request, true);
+        if (messageDto != null) {
+            MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
+            EmployeeResponse errorResponse = new EmployeeResponse(Constants.CODE_ERROR, null, messageResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+
+        Long employeeId = employeeService.updateEmployee(request);
+        MessageResponse message = new MessageResponse(Constants.MSG002, new ArrayList<>());
         EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);
         return ResponseEntity.ok(response);
     }

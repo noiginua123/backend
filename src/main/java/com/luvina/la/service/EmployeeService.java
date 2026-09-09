@@ -59,6 +59,15 @@ public interface EmployeeService {
     Long addEmployee(EmployeeRequest employeeRequest);
 
     /**
+     * Cập nhật thông tin nhân viên (ADM004) kèm chứng chỉ nếu có.
+     * Mật khẩu chỉ được cập nhật khi có giá trị mới (được mã hóa BCrypt trước khi lưu).
+     *
+     * @param employeeRequest Dữ liệu nhân viên đã qua validate
+     * @return ID của nhân viên vừa được cập nhật
+     */
+    Long updateEmployee(EmployeeRequest employeeRequest);
+
+    /**
      * Kiểm tra sự tồn tại của nhân viên theo ID.
      *
      * @param employeeId ID nhân viên cần kiểm tra

@@ -228,6 +228,78 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     /**
+     * Cập nhật thông tin nhân viên (ADM004) kèm chứng chỉ nếu có.
+     * Mật khẩu chỉ được cập nhật khi có giá trị mới (được mã hóa BCrypt trước khi lưu).
+     *
+     * @param employeeRequest Dữ liệu nhân viên đã qua validate
+     * @return ID nhân viên vừa được cập nhật
+     * @throws AppException ER013 nếu không tìm thấy nhân viên, ER015 nếu lỗi cơ sở dữ liệu
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long updateEmployee(EmployeeRequest employeeRequest) {
+        try {
+            Long employeeId = Long.valueOf(employeeRequest.getEmployeeId().trim());
+            EmployeeEntity employee = employeeRepository.findById(employeeId)
+                    .orElseThrow(() -> {
+                        String idLabel = messageSource != null
+                                ? messageSource.getMessage("field.id", null, LocaleContextHolder.getLocale())
+                                : "ＩＤ";
+                        return new AppException(Constants.ER013, List.of(idLabel));
+                    });
+
+            employee.setDepartmentId(Long.valueOf(employeeRequest.getDepartmentId().trim()));
+            employee.setEmployeeName(employeeRequest.getEmployeeName().trim());
+            employee.setEmployeeNameKana(employeeRequest.getEmployeeNameKana().trim());
+            employee.setEmployeeBirthDate(LocalDate.parse(
+                    employeeRequest.getEmployeeBirthDate().trim(),
+                    DATE_FORMATTER));
+            employee.setEmployeeEmail(employeeRequest.getEmployeeEmail().trim());
+            employee.setEmployeeTelephone(employeeRequest.getEmployeeTelephone().trim());
+            employee.setEmployeeLoginId(employeeRequest.getEmployeeLoginId().trim());
+
+            // Chỉ cập nhật mật khẩu nếu có nhập mật khẩu mới
+            if (!commonValidator.isEmpty(employeeRequest.getEmployeeLoginPassword())) {
+                employee.setEmployeeLoginPassword(passwordEncoder.encode(employeeRequest.getEmployeeLoginPassword()));
+            }
+
+            employeeRepository.save(employee);
+
+            // Xóa toàn bộ chứng chỉ cũ
+            employeeCertificationRepository.deleteByEmployeeId(employeeId);
+            employeeCertificationRepository.flush();
+
+            // Thêm chứng chỉ mới nếu có
+            List<CertificationRequest> certifications = employeeRequest.getCertifications();
+            if (certifications != null) {
+                for (CertificationRequest certification : certifications) {
+                    if (certification == null
+                            || commonValidator.isEmpty(certification.getCertificationId())) {
+                        continue;
+                    }
+                    EmployeeCertificationEntity entity = new EmployeeCertificationEntity();
+                    entity.setEmployeeId(employeeId);
+                    entity.setCertificationId(Long.valueOf(certification.getCertificationId().trim()));
+                    entity.setStartDate(LocalDate.parse(
+                            certification.getStartDate().trim(),
+                            DATE_FORMATTER));
+                    entity.setEndDate(LocalDate.parse(
+                            certification.getEndDate().trim(),
+                            DATE_FORMATTER));
+                    entity.setScore(new BigDecimal(certification.getScore().trim()));
+                    employeeCertificationRepository.save(entity);
+                }
+            }
+
+            return employeeId;
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new AppException(Constants.ER015);
+        }
+    }
+
+    /**
      * Kiểm tra sự tồn tại của nhân viên theo ID.
      *
      * @param employeeId ID nhân viên cần kiểm tra

@@ -8,13 +8,15 @@ package com.luvina.la.payload.request;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Payload chứa thông tin nhân viên.
+ * Payload chứa thông tin nhân viên (ADM004 - Thêm mới và Chỉnh sửa).
  *
  * @author thanhvinh
  */
@@ -26,6 +28,9 @@ public class EmployeeRequest implements Serializable {
 
     /** Mã định danh tuần tự hóa. */
     private static final long serialVersionUID = 1L;
+
+    /** ID nhân viên (ＩＤ) - dùng cho luồng chỉnh sửa (ADM004). */
+    private String employeeId;
 
     /** Tên tài khoản đăng nhập (アカウント名). */
     private String employeeLoginId;
@@ -51,6 +56,23 @@ public class EmployeeRequest implements Serializable {
     /** ID phòng ban / nhóm (グループ). */
     private String departmentId;
 
-    /** Danh sách chứng chỉ đính kèm (0 hoặc 1 phần tử). */
+    /** Danh sách chứng chỉ đính kèm (chấp nhận cả Object đơn lẻ lẫn Array). */
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<CertificationRequest> certifications;
+
+    /**
+     * Lấy employeeId dưới dạng Long nếu hợp lệ.
+     *
+     * @return ID nhân viên kiểu Long hoặc null nếu không hợp lệ
+     */
+    public Long getEmployeeIdAsLong() {
+        if (employeeId == null || employeeId.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(employeeId.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 }

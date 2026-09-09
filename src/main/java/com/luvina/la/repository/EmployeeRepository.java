@@ -40,6 +40,15 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
     boolean existsByEmployeeLoginId(String employeeLoginId);
 
     /**
+     * Kiểm tra tên đăng nhập đã tồn tại ở nhân viên khác hay chưa.
+     *
+     * @param employeeLoginId Tên tài khoản đăng nhập
+     * @param employeeId      ID nhân viên hiện tại cần loại trừ
+     * @return true nếu tên đăng nhập đã được sử dụng bởi nhân viên khác
+     */
+    boolean existsByEmployeeLoginIdAndEmployeeIdNot(String employeeLoginId, Long employeeId);
+
+    /**
      * Tìm kiếm nhân viên theo ID.
      *
      * @param employeeId ID nhân viên

@@ -65,6 +65,8 @@ class EmployeeValidatorTest {
         when(departmentRepository.existsById(1L)).thenReturn(true);
         when(certificationRepository.existsById(1L)).thenReturn(true);
         when(employeeRepository.existsByEmployeeLoginId("existing_user")).thenReturn(true);
+        when(employeeRepository.existsById(1L)).thenReturn(true);
+        when(employeeRepository.existsByEmployeeLoginIdAndEmployeeIdNot("duplicate_user", 1L)).thenReturn(true);
     }
 
     /**
@@ -234,6 +236,96 @@ class EmployeeValidatorTest {
         MessageDTO result = employeeValidator.validateAddEditEmployee(request);
 
         assertNull(result);
+    }
+
+    /**
+     * Kiểm tra chế độ edit: khi employeeId rỗng thì trả về MessageDTO với mã ER001.
+     */
+    @Test
+    void shouldReturnER001WhenEditEmployeeIdIsEmpty() {
+        EmployeeRequest request = createValidRequest();
+        request.setEmployeeId("");
+
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request, true);
+
+        assertNotNull(result);
+        assertEquals(Constants.ER001, result.getCode());
+        assertEquals(
+                messageSource.getMessage("field.id", null, Locale.getDefault()),
+                result.getParams().get(0)
+        );
+    }
+
+    /**
+     * Kiểm tra chế độ edit: khi employeeId không tồn tại thì trả về MessageDTO với mã ER013.
+     */
+    @Test
+    void shouldReturnER013WhenEditEmployeeIdDoesNotExist() {
+        EmployeeRequest request = createValidRequest();
+        request.setEmployeeId("999");
+
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request, true);
+
+        assertNotNull(result);
+        assertEquals(Constants.ER013, result.getCode());
+    }
+
+    /**
+     * Kiểm tra chế độ edit: khi loginId giữ nguyên của chính mình thì không báo lỗi ER003.
+     */
+    @Test
+    void shouldPassWhenEditKeepsSameLoginId() {
+        EmployeeRequest request = createValidRequest();
+        request.setEmployeeId("1");
+        request.setEmployeeLoginId("existing_user");
+
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request, true);
+
+        assertNull(result);
+    }
+
+    /**
+     * Kiểm tra chế độ edit: khi loginId trùng với nhân viên khác thì trả về MessageDTO với mã ER003.
+     */
+    @Test
+    void shouldReturnER003WhenEditLoginIdExistsForAnotherEmployee() {
+        EmployeeRequest request = createValidRequest();
+        request.setEmployeeId("1");
+        request.setEmployeeLoginId("duplicate_user");
+
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request, true);
+
+        assertNotNull(result);
+        assertEquals(Constants.ER003, result.getCode());
+    }
+
+    /**
+     * Kiểm tra chế độ edit: cho phép mật khẩu để trống (giữ nguyên mật khẩu cũ).
+     */
+    @Test
+    void shouldPassWhenEditPasswordIsEmpty() {
+        EmployeeRequest request = createValidRequest();
+        request.setEmployeeId("1");
+        request.setEmployeeLoginPassword("");
+
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request, true);
+
+        assertNull(result);
+    }
+
+    /**
+     * Kiểm tra chế độ edit: khi có nhập mật khẩu nhưng ngắn hơn 8 ký tự thì báo lỗi ER007.
+     */
+    @Test
+    void shouldReturnER007WhenEditPasswordIsTooShort() {
+        EmployeeRequest request = createValidRequest();
+        request.setEmployeeId("1");
+        request.setEmployeeLoginPassword("12345");
+
+        MessageDTO result = employeeValidator.validateAddEditEmployee(request, true);
+
+        assertNotNull(result);
+        assertEquals(Constants.ER007, result.getCode());
     }
 
     /**

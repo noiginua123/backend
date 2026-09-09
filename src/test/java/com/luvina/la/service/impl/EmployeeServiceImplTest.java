@@ -7,6 +7,7 @@ package com.luvina.la.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +25,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.luvina.la.constant.Constants;
 import com.luvina.la.dto.EmployeeListDTO;
+import com.luvina.la.entity.EmployeeCertificationEntity;
+import com.luvina.la.entity.EmployeeEntity;
+import com.luvina.la.exception.AppException;
 import com.luvina.la.mapper.EmployeeMapper;
+import com.luvina.la.payload.request.CertificationRequest;
+import com.luvina.la.payload.request.EmployeeRequest;
 import com.luvina.la.repository.EmployeeCertificationRepository;
 import com.luvina.la.repository.EmployeeRepository;
 import com.luvina.la.validator.CommonValidator;
@@ -42,6 +49,10 @@ class EmployeeServiceImplTest {
 
     private EmployeeMapper employeeMapper;
 
+    private EmployeeCertificationRepository employeeCertificationRepository;
+
+    private PasswordEncoder passwordEncoder;
+
     private EmployeeServiceImpl employeeService;
 
     /**
@@ -51,8 +62,8 @@ class EmployeeServiceImplTest {
     void setUp() {
         employeeRepository = mock(EmployeeRepository.class);
         employeeMapper = mock(EmployeeMapper.class);
-        EmployeeCertificationRepository employeeCertificationRepository = mock(EmployeeCertificationRepository.class);
-        PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+        employeeCertificationRepository = mock(EmployeeCertificationRepository.class);
+        passwordEncoder = mock(PasswordEncoder.class);
         employeeService = new EmployeeServiceImpl(
                 employeeRepository,
                 employeeMapper,
@@ -134,5 +145,92 @@ class EmployeeServiceImplTest {
 
         assertFalse(exists);
         verify(employeeRepository, never()).existsById(any());
+    }
+
+    /**
+     * Kiểm tra cập nhật nhân viên thành công khi có thay đổi mật khẩu và chứng chỉ.
+     */
+    @Test
+    void shouldUpdateEmployeeSuccessfullyWhenPasswordAndCertificationProvided() {
+        EmployeeEntity existing = new EmployeeEntity();
+        existing.setEmployeeId(1L);
+        existing.setEmployeeLoginPassword("old_hashed_password");
+
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(passwordEncoder.encode("newPassword123")).thenReturn("new_hashed_password");
+
+        EmployeeRequest request = new EmployeeRequest();
+        request.setEmployeeId("1");
+        request.setEmployeeLoginId("updated_login");
+        request.setDepartmentId("2");
+        request.setEmployeeName("Nguyen Van B");
+        request.setEmployeeNameKana("ｱｲｳｴｵ");
+        request.setEmployeeBirthDate("1995/05/15");
+        request.setEmployeeEmail("updated@example.com");
+        request.setEmployeeTelephone("0987654321");
+        request.setEmployeeLoginPassword("newPassword123");
+
+        CertificationRequest cert = new CertificationRequest();
+        cert.setCertificationId("2");
+        cert.setStartDate("2023/01/01");
+        cert.setEndDate("2024/01/01");
+        cert.setScore("850");
+        request.setCertifications(List.of(cert));
+
+        Long updatedId = employeeService.updateEmployee(request);
+
+        assertEquals(1L, updatedId);
+        assertEquals("new_hashed_password", existing.getEmployeeLoginPassword());
+        assertEquals("updated_login", existing.getEmployeeLoginId());
+        assertEquals("Nguyen Van B", existing.getEmployeeName());
+        verify(passwordEncoder).encode("newPassword123");
+        verify(employeeRepository).save(existing);
+        verify(employeeCertificationRepository).deleteByEmployeeId(1L);
+        verify(employeeCertificationRepository).flush();
+        verify(employeeCertificationRepository).save(any(EmployeeCertificationEntity.class));
+    }
+
+    /**
+     * Kiểm tra cập nhật nhân viên giữ nguyên mật khẩu cũ khi mật khẩu trong request rỗng.
+     */
+    @Test
+    void shouldKeepExistingPasswordWhenUpdatingWithEmptyPassword() {
+        EmployeeEntity existing = new EmployeeEntity();
+        existing.setEmployeeId(1L);
+        existing.setEmployeeLoginPassword("old_hashed_password");
+
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        EmployeeRequest request = new EmployeeRequest();
+        request.setEmployeeId("1");
+        request.setEmployeeLoginId("updated_login");
+        request.setDepartmentId("2");
+        request.setEmployeeName("Nguyen Van B");
+        request.setEmployeeNameKana("ｱｲｳｴｵ");
+        request.setEmployeeBirthDate("1995/05/15");
+        request.setEmployeeEmail("updated@example.com");
+        request.setEmployeeTelephone("0987654321");
+        request.setEmployeeLoginPassword("");
+
+        Long updatedId = employeeService.updateEmployee(request);
+
+        assertEquals(1L, updatedId);
+        assertEquals("old_hashed_password", existing.getEmployeeLoginPassword());
+        verify(passwordEncoder, never()).encode(any());
+        verify(employeeRepository).save(existing);
+    }
+
+    /**
+     * Kiểm tra ném ngoại lệ ER013 khi nhân viên cần cập nhật không tồn tại trong hệ thống.
+     */
+    @Test
+    void shouldThrowAppExceptionER013WhenUpdatingNonExistentEmployee() {
+        when(employeeRepository.findById(99L)).thenReturn(Optional.empty());
+
+        EmployeeRequest request = new EmployeeRequest();
+        request.setEmployeeId("99");
+
+        AppException ex = assertThrows(AppException.class, () -> employeeService.updateEmployee(request));
+        assertEquals(Constants.ER013, ex.getCode());
     }
 }

@@ -71,6 +71,9 @@ class EmployeeControllerTest {
         when(employeeService.getEmployees(
                 any(), any(), anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt()
         )).thenReturn(Collections.emptyList());
+        when(departmentRepository.existsById(1L)).thenReturn(true);
+        when(employeeRepository.existsById(1L)).thenReturn(true);
+        when(employeeService.updateEmployee(any())).thenReturn(1L);
     }
 
     /**
@@ -83,6 +86,14 @@ class EmployeeControllerTest {
         messageSource.addMessage("field.offset", Locale.getDefault(), "offset");
         messageSource.addMessage("field.limit", Locale.getDefault(), "limit");
         messageSource.addMessage("field.loginId", Locale.getDefault(), "アカウント名");
+        messageSource.addMessage("field.id", Locale.getDefault(), "ＩＤ");
+        messageSource.addMessage("field.group", Locale.getDefault(), "グループ");
+        messageSource.addMessage("field.fullname", Locale.getDefault(), "氏名");
+        messageSource.addMessage("field.fullnameKana", Locale.getDefault(), "カタカナ氏名");
+        messageSource.addMessage("field.birthDate", Locale.getDefault(), "生年月日");
+        messageSource.addMessage("field.email", Locale.getDefault(), "メールアドレス");
+        messageSource.addMessage("field.telephone", Locale.getDefault(), "電話番号");
+        messageSource.addMessage("field.password", Locale.getDefault(), "パスワード");
         return messageSource;
     }
 
@@ -183,5 +194,49 @@ class EmployeeControllerTest {
         assertEquals(Constants.CODE_ERROR, response.getBody().getCode());
         assertNotNull(response.getBody().getMessage());
         assertEquals(Constants.ER001, response.getBody().getMessage().getCode());
+    }
+
+    /**
+     * Kiểm tra khi validate dữ liệu cập nhật thất bại thì trả về HTTP 500 kèm mã lỗi.
+     */
+    @Test
+    void shouldReturn500WhenUpdateEmployeeValidationFails() {
+        EmployeeRequest invalidRequest = new EmployeeRequest();
+
+        ResponseEntity<EmployeeResponse> response = employeeController.updateEmployee(invalidRequest);
+
+        verify(employeeService, never()).updateEmployee(any());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(Constants.CODE_ERROR, response.getBody().getCode());
+        assertNotNull(response.getBody().getMessage());
+        assertEquals(Constants.ER001, response.getBody().getMessage().getCode());
+    }
+
+    /**
+     * Kiểm tra khi cập nhật nhân viên thành công thì trả về HTTP 200, mã CODE_SUCCESS và thông báo MSG002.
+     */
+    @Test
+    void shouldReturn200AndMSG002WhenUpdateEmployeeSucceeds() {
+        EmployeeRequest validRequest = new EmployeeRequest();
+        validRequest.setEmployeeId("1");
+        validRequest.setEmployeeLoginId("new_user");
+        validRequest.setDepartmentId("1");
+        validRequest.setEmployeeName("Nguyen Van A");
+        validRequest.setEmployeeNameKana("ｱｲｳｴｵ");
+        validRequest.setEmployeeBirthDate("2000/01/01");
+        validRequest.setEmployeeEmail("test@example.com");
+        validRequest.setEmployeeTelephone("0123456789");
+        validRequest.setEmployeeLoginPassword("");
+
+        ResponseEntity<EmployeeResponse> response = employeeController.updateEmployee(validRequest);
+
+        verify(employeeService).updateEmployee(validRequest);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(Constants.CODE_SUCCESS, response.getBody().getCode());
+        assertEquals(1L, response.getBody().getEmployeeId().longValue());
+        assertNotNull(response.getBody().getMessage());
+        assertEquals(Constants.MSG002, response.getBody().getMessage().getCode());
     }
 }

@@ -234,13 +234,38 @@ public class EmployeeValidator {
     }
 
     /**
-     * Kiểm tra toàn bộ dữ liệu thêm mới (ADM004) hoặc chỉnh sửa nhân viên.
+     * Kiểm tra toàn bộ dữ liệu thêm mới (ADM004) hoặc chỉnh sửa nhân viên (mặc định thêm mới).
      *
      * @param request Dữ liệu nhân viên
      * @return MessageDTO chứa thông tin lỗi nếu không hợp lệ, hoặc null nếu hợp lệ
      */
     public MessageDTO validateAddEditEmployee(EmployeeRequest request) {
-        MessageDTO messageDto = validateLoginId(request.getEmployeeLoginId());
+        return validateAddEditEmployee(request, false);
+    }
+
+    /**
+     * Kiểm tra toàn bộ dữ liệu thêm mới (ADM004) hoặc chỉnh sửa nhân viên.
+     *
+     * @param request Dữ liệu nhân viên
+     * @param isEdit  true nếu là thao tác chỉnh sửa (Edit), false nếu là thêm mới (Add)
+     * @return MessageDTO chứa thông tin lỗi nếu không hợp lệ, hoặc null nếu hợp lệ
+     */
+    public MessageDTO validateAddEditEmployee(EmployeeRequest request, boolean isEdit) {
+        MessageDTO messageDto = null;
+        Long employeeId = null;
+
+        // Nếu là luồng Edit, bắt buộc kiểm tra employeeId trước tiên
+        if (isEdit) {
+            messageDto = validateEmployeeId(request.getEmployeeId());
+            if (messageDto != null) {
+                return messageDto;
+            }
+            employeeId = request.getEmployeeIdAsLong();
+        }
+
+        if (messageDto == null) {
+            messageDto = validateLoginId(request.getEmployeeLoginId(), isEdit, employeeId);
+        }
         if (messageDto == null) {
             messageDto = validateDepartment(request.getDepartmentId());
         }
@@ -260,7 +285,7 @@ public class EmployeeValidator {
             messageDto = validateTelephone(request.getEmployeeTelephone());
         }
         if (messageDto == null) {
-            messageDto = validatePassword(request.getEmployeeLoginPassword());
+            messageDto = validatePassword(request.getEmployeeLoginPassword(), isEdit);
         }
         if (messageDto == null) {
             messageDto = validateCertifications(request.getCertifications());
@@ -270,12 +295,32 @@ public class EmployeeValidator {
     }
 
     /**
-     * Kiểm tra login id: bắt buộc, tối đa 50, đúng định dạng, chưa tồn tại.
+     * Kiểm tra tính hợp lệ của employeeId cho chức năng chỉnh sửa nhân viên (ADM004).
      *
-     * @param loginId Login id
+     * @param employeeId ID nhân viên dạng chuỗi
+     * @return đối tượng MessageDTO nếu có lỗi (ER001 nếu rỗng, ER013 nếu không tồn tại), ngược lại trả về null
+     */
+    private MessageDTO validateEmployeeId(String employeeId) {
+        MessageDTO messageDto = null;
+        String label = getLabel(FIELD_ID_KEY);
+        if (commonValidator.isEmpty(employeeId)) {
+            messageDto = buildMessage(Constants.ER001, label);
+        } else if (!isPositiveLong(employeeId)
+                || !employeeRepository.existsById(Long.valueOf(employeeId.trim()))) {
+            messageDto = buildMessage(Constants.ER013, label);
+        }
+        return messageDto;
+    }
+
+    /**
+     * Kiểm tra login id: bắt buộc, tối đa 50, đúng định dạng, chưa tồn tại (loại trừ chính mình nếu đang edit).
+     *
+     * @param loginId    Login id
+     * @param isEdit     Cờ xác định chế độ edit
+     * @param employeeId ID nhân viên hiện tại nếu đang edit
      * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private MessageDTO validateLoginId(String loginId) {
+    private MessageDTO validateLoginId(String loginId, boolean isEdit, Long employeeId) {
         MessageDTO messageDto = null;
         String label = getLabel(FIELD_LOGIN_ID_KEY);
         if (commonValidator.isEmpty(loginId)) {
@@ -284,6 +329,10 @@ public class EmployeeValidator {
             messageDto = buildMessage(Constants.ER006, Constants.MAX_LENGTH_50, label);
         } else if (!commonValidator.isValidLoginId(loginId.trim())) {
             messageDto = buildMessage(Constants.ER019);
+        } else if (isEdit && employeeId != null) {
+            if (employeeRepository.existsByEmployeeLoginIdAndEmployeeIdNot(loginId.trim(), employeeId)) {
+                messageDto = buildMessage(Constants.ER003, label);
+            }
         } else if (employeeRepository.existsByEmployeeLoginId(loginId.trim())) {
             messageDto = buildMessage(Constants.ER003, label);
         }
@@ -291,7 +340,7 @@ public class EmployeeValidator {
     }
 
     /**
-     * Kiểm tra phòng ban: bắt buộc chọn và phải tồn tại.
+     * Kiểm tra phòng ban: bắt buộc chọn, số nguyên dương và phải tồn tại.
      *
      * @param departmentId ID phòng ban dạng chuỗi
      * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
@@ -301,6 +350,8 @@ public class EmployeeValidator {
         String label = getLabel(FIELD_GROUP_KEY);
         if (commonValidator.isEmpty(departmentId)) {
             messageDto = buildMessage(Constants.ER002, label);
+        } else if (!isPositiveLong(departmentId)) {
+            messageDto = buildMessage(Constants.ER018, label);
         } else if (!isExistingDepartment(departmentId)) {
             messageDto = buildMessage(Constants.ER004, label);
         }
@@ -399,16 +450,19 @@ public class EmployeeValidator {
     }
 
     /**
-     * Kiểm tra mật khẩu: bắt buộc, độ dài 8 - 50.
+     * Kiểm tra mật khẩu: bắt buộc (với Add), độ dài 8 - 50. Với Edit cho phép để trống.
      *
      * @param password Mật khẩu
+     * @param isEdit   true nếu là luồng chỉnh sửa (cho phép để trống để giữ mật khẩu cũ)
      * @return đối tượng MessageDTO nếu có lỗi, ngược lại trả về null
      */
-    private MessageDTO validatePassword(String password) {
+    private MessageDTO validatePassword(String password, boolean isEdit) {
         MessageDTO messageDto = null;
         String label = getLabel(FIELD_PASSWORD_KEY);
         if (commonValidator.isEmpty(password)) {
-            messageDto = buildMessage(Constants.ER001, label);
+            if (!isEdit) {
+                messageDto = buildMessage(Constants.ER001, label);
+            }
         } else if (!commonValidator.isLengthInRange(password, Constants.PASSWORD_MIN_LENGTH, Constants.PASSWORD_MAX_LENGTH)) {
             messageDto = buildMessage(
                     Constants.ER007,
