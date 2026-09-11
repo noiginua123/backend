@@ -127,8 +127,10 @@ public class EmployeeController {
      */
     @PostMapping
     public ResponseEntity<EmployeeResponse> addEmployee(
+            @RequestParam(value = "mode", required = false) String mode,
             @RequestBody EmployeeRequest request) {
-        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request);
+        boolean isEdit = "edit".equalsIgnoreCase(mode);
+        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request, isEdit);
         if (messageDto != null) {
             MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
             EmployeeResponse errorResponse = new EmployeeResponse(Constants.CODE_ERROR, null, messageResponse);
@@ -145,13 +147,16 @@ public class EmployeeController {
      * API cập nhật thông tin nhân viên vào hệ thống (ADM004).
      * Thực hiện kiểm tra tính hợp lệ của dữ liệu đầu vào trước khi cập nhật vào cơ sở dữ liệu.
      *
+     * @param mode    Chế độ thao tác từ URL (ví dụ: mode=edit)
      * @param request Dữ liệu thông tin nhân viên cần chỉnh sửa từ form ADM004
      * @return ResponseEntity chứa EmployeeResponse kèm ID nhân viên và thông báo kết quả (MSG002)
      */
     @PutMapping
     public ResponseEntity<EmployeeResponse> updateEmployee(
+            @RequestParam(value = "mode", required = false) String mode,
             @RequestBody EmployeeRequest request) {
-        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request, true);
+        boolean isEdit = mode == null || !"add".equalsIgnoreCase(mode);
+        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request, isEdit);
         if (messageDto != null) {
             MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
             EmployeeResponse errorResponse = new EmployeeResponse(Constants.CODE_ERROR, null, messageResponse);
@@ -162,6 +167,14 @@ public class EmployeeController {
         MessageResponse message = new MessageResponse(Constants.MSG002, new ArrayList<>());
         EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);
         return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<EmployeeResponse> addEmployee(EmployeeRequest request) {
+        return addEmployee(null, request);
+    }
+
+    public ResponseEntity<EmployeeResponse> updateEmployee(EmployeeRequest request) {
+        return updateEmployee(null, request);
     }
 
     /**
@@ -180,6 +193,19 @@ public class EmployeeController {
                 employeeDetailDTO
         );
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * API kiểm tra sự tồn tại của nhân viên theo ID (siêu nhẹ, không fetch chi tiết).
+     *
+     * @param employeeId ID nhân viên cần kiểm tra
+     * @return ResponseEntity chứa boolean true nếu tồn tại, false nếu không
+     */
+    @GetMapping("/{employeeId}/exists")
+    public ResponseEntity<Boolean> checkEmployeeExists(
+            @PathVariable("employeeId") Long employeeId) {
+        boolean exists = employeeService.checkExistsEmployeeById(employeeId);
+        return ResponseEntity.ok(exists);
     }
 
     /**

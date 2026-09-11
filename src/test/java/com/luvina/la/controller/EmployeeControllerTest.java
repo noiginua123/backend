@@ -239,4 +239,32 @@ class EmployeeControllerTest {
         assertNotNull(response.getBody().getMessage());
         assertEquals(Constants.MSG002, response.getBody().getMessage().getCode());
     }
+
+    /**
+     * Kiểm tra API checkEmployeeExists trả về true khi nhân viên tồn tại.
+     */
+    @Test
+    void shouldReturnTrueWhenEmployeeExists() {
+        when(employeeService.checkExistsEmployeeById(1L)).thenReturn(true);
+
+        ResponseEntity<Boolean> response = employeeController.checkEmployeeExists(1L);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(Boolean.TRUE, response.getBody());
+    }
+
+    /**
+     * Kiểm tra API checkEmployeeExists trả về false khi nhân viên không tồn tại.
+     */
+    @Test
+    void shouldReturnFalseWhenEmployeeDoesNotExist() {
+        when(employeeService.checkExistsEmployeeById(999L)).thenReturn(false);
+
+        ResponseEntity<Boolean> response = employeeController.checkEmployeeExists(999L);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(Boolean.FALSE, response.getBody());
+    }
 }

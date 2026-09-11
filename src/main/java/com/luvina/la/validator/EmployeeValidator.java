@@ -31,59 +31,6 @@ import com.luvina.la.repository.EmployeeRepository;
 @Component
 public class EmployeeValidator {
 
-    /** Số chữ số tối đa của ID phòng ban. */
-    private static final int MAX_DEPARTMENT_ID_DIGITS = 18;
-
-    /** Khóa nhãn trường ID trong messages.properties. */
-    private static final String FIELD_ID_KEY = "field.id";
-
-    /** Khóa nhãn trường phòng ban trong messages.properties. */
-    private static final String FIELD_DEPARTMENT_ID_KEY = "field.departmentId";
-
-    /** Khóa nhãn trường họ tên trong messages.properties. */
-    private static final String FIELD_FULLNAME_KEY = "field.fullname";
-
-    /** Khóa nhãn trường vị trí bắt đầu (offset) trong messages.properties. */
-    private static final String FIELD_OFFSET_KEY = "field.offset";
-
-    /** Khóa nhãn trường số bản ghi mỗi trang (limit) trong messages.properties. */
-    private static final String FIELD_LIMIT_KEY = "field.limit";
-
-    /** Khóa nhãn trường tên đăng nhập trong messages.properties. */
-    private static final String FIELD_LOGIN_ID_KEY = "field.loginId";
-
-    /** Khóa nhãn trường nhóm/phòng ban trong messages.properties. */
-    private static final String FIELD_GROUP_KEY = "field.group";
-
-    /** Khóa nhãn trường họ tên Kana trong messages.properties. */
-    private static final String FIELD_FULLNAME_KANA_KEY = "field.fullnameKana";
-
-    /** Khóa nhãn trường ngày sinh trong messages.properties. */
-    private static final String FIELD_BIRTH_DATE_KEY = "field.birthDate";
-
-    /** Khóa nhãn trường email trong messages.properties. */
-    private static final String FIELD_EMAIL_KEY = "field.email";
-
-    /** Khóa nhãn trường số điện thoại trong messages.properties. */
-    private static final String FIELD_TELEPHONE_KEY = "field.telephone";
-
-    /** Khóa nhãn trường mật khẩu trong messages.properties. */
-    private static final String FIELD_PASSWORD_KEY = "field.password";
-
-    /** Khóa nhãn trường chứng chỉ trong messages.properties. */
-    private static final String FIELD_CERTIFICATION_KEY = "field.certification";
-
-    /** Khóa nhãn trường ngày cấp chứng chỉ trong messages.properties. */
-    private static final String FIELD_START_DATE_KEY = "field.startDate";
-
-    /** Khóa nhãn trường ngày hết hạn chứng chỉ trong messages.properties. */
-    private static final String FIELD_END_DATE_KEY = "field.endDate";
-
-    /** Khóa nhãn trường điểm số chứng chỉ trong messages.properties. */
-    private static final String FIELD_SCORE_KEY = "field.score";
-
-    /** Token định dạng email phục vụ hiển thị thông báo lỗi định dạng. */
-    private static final String EMAIL_FORMAT_TOKEN = "email";
 
     /** Validator dùng chung các thao tác kiểm tra chuỗi và số. */
     private final CommonValidator commonValidator;
@@ -149,7 +96,7 @@ public class EmployeeValidator {
                 offset,
                 Constants.DEFAULT_EMPLOYEE_OFFSET,
                 true,
-                getLabel(FIELD_OFFSET_KEY)
+                getLabel(Constants.FIELD_OFFSET)
         );
     }
 
@@ -165,7 +112,7 @@ public class EmployeeValidator {
                 limit,
                 Constants.DEFAULT_EMPLOYEE_PAGE_SIZE,
                 false,
-                getLabel(FIELD_LIMIT_KEY)
+                getLabel(Constants.FIELD_LIMIT)
         );
     }
 
@@ -184,11 +131,11 @@ public class EmployeeValidator {
         String trimmedDepartmentId = departmentId.trim();
         if (!commonValidator.isHalfWidthNumber(
                 trimmedDepartmentId,
-                MAX_DEPARTMENT_ID_DIGITS
+                Constants.MAX_DEPARTMENT_ID_DIGITS
         )) {
             throw new AppException(
                     Constants.ER018,
-                    List.of(getLabel(FIELD_DEPARTMENT_ID_KEY))
+                    List.of(getLabel(Constants.FIELD_DEPARTMENT_ID))
             );
         }
 
@@ -196,7 +143,7 @@ public class EmployeeValidator {
         if (parsedDepartmentId == 0L) {
             throw new AppException(
                     Constants.ER018,
-                    List.of(getLabel(FIELD_DEPARTMENT_ID_KEY))
+                    List.of(getLabel(Constants.FIELD_DEPARTMENT_ID))
             );
         }
         return parsedDepartmentId;
@@ -218,7 +165,7 @@ public class EmployeeValidator {
         if (characterCount > Constants.EMPLOYEE_NAME_MAX_LENGTH) {
             throw new AppException(
                     Constants.ER006,
-                    List.of(Constants.EMPLOYEE_NAME_MAX_LENGTH, getLabel(FIELD_FULLNAME_KEY))
+                    List.of(Constants.EMPLOYEE_NAME_MAX_LENGTH, getLabel(Constants.FIELD_FULLNAME))
             );
         }
 
@@ -302,7 +249,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateEmployeeId(String employeeId) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_ID_KEY);
+        String label = getLabel(Constants.FIELD_ID);
         if (commonValidator.isEmpty(employeeId)) {
             messageDto = buildMessage(Constants.ER001, label);
         } else if (!isPositiveLong(employeeId)
@@ -322,17 +269,23 @@ public class EmployeeValidator {
      */
     private MessageDTO validateLoginId(String loginId, boolean isEdit, Long employeeId) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_LOGIN_ID_KEY);
+        String label = getLabel(Constants.FIELD_LOGIN_ID);
+        if (isEdit) {
+            // Ở chế độ Edit: không check bắt buộc, độ dài hay định dạng
+            if (!commonValidator.isEmpty(loginId) && employeeId != null) {
+                if (employeeRepository.existsByEmployeeLoginIdAndEmployeeIdNot(loginId.trim(), employeeId)) {
+                    messageDto = buildMessage(Constants.ER003, label);
+                }
+            }
+            return messageDto;
+        }
+
         if (commonValidator.isEmpty(loginId)) {
             messageDto = buildMessage(Constants.ER001, label);
         } else if (commonValidator.isMaxLength(loginId.trim(), Constants.MAX_LENGTH_50)) {
             messageDto = buildMessage(Constants.ER006, Constants.MAX_LENGTH_50, label);
         } else if (!commonValidator.isValidLoginId(loginId.trim())) {
             messageDto = buildMessage(Constants.ER019);
-        } else if (isEdit && employeeId != null) {
-            if (employeeRepository.existsByEmployeeLoginIdAndEmployeeIdNot(loginId.trim(), employeeId)) {
-                messageDto = buildMessage(Constants.ER003, label);
-            }
         } else if (employeeRepository.existsByEmployeeLoginId(loginId.trim())) {
             messageDto = buildMessage(Constants.ER003, label);
         }
@@ -347,7 +300,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateDepartment(String departmentId) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_GROUP_KEY);
+        String label = getLabel(Constants.FIELD_GROUP);
         if (commonValidator.isEmpty(departmentId)) {
             messageDto = buildMessage(Constants.ER002, label);
         } else if (!isPositiveLong(departmentId)) {
@@ -366,7 +319,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateFullName(String fullName) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_FULLNAME_KEY);
+        String label = getLabel(Constants.FIELD_FULLNAME);
         if (commonValidator.isEmpty(fullName)) {
             messageDto = buildMessage(Constants.ER001, label);
         } else if (commonValidator.isMaxLength(fullName.trim(), Constants.MAX_LENGTH_125)) {
@@ -383,7 +336,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateNameKana(String nameKana) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_FULLNAME_KANA_KEY);
+        String label = getLabel(Constants.FIELD_FULLNAME_KANA);
         if (commonValidator.isEmpty(nameKana)) {
             messageDto = buildMessage(Constants.ER001, label);
         } else if (commonValidator.isMaxLength(nameKana.trim(), Constants.MAX_LENGTH_125)) {
@@ -402,7 +355,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateBirthDate(String birthDate) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_BIRTH_DATE_KEY);
+        String label = getLabel(Constants.FIELD_BIRTH_DATE);
         if (commonValidator.isEmpty(birthDate)) {
             messageDto = buildMessage(Constants.ER002, label);
         } else if (!commonValidator.isValidDate(birthDate.trim())) {
@@ -419,13 +372,13 @@ public class EmployeeValidator {
      */
     private MessageDTO validateEmail(String email) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_EMAIL_KEY);
+        String label = getLabel(Constants.FIELD_EMAIL);
         if (commonValidator.isEmpty(email)) {
             messageDto = buildMessage(Constants.ER001, label);
         } else if (commonValidator.isMaxLength(email.trim(), Constants.MAX_LENGTH_125)) {
             messageDto = buildMessage(Constants.ER006, Constants.MAX_LENGTH_125, label);
         } else if (!commonValidator.isValidEmail(email.trim())) {
-            messageDto = buildMessage(Constants.ER005, label, EMAIL_FORMAT_TOKEN);
+            messageDto = buildMessage(Constants.ER005, label, Constants.EMAIL_FORMAT_TOKEN);
         }
         return messageDto;
     }
@@ -438,7 +391,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateTelephone(String telephone) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_TELEPHONE_KEY);
+        String label = getLabel(Constants.FIELD_TELEPHONE);
         if (commonValidator.isEmpty(telephone)) {
             messageDto = buildMessage(Constants.ER001, label);
         } else if (commonValidator.isMaxLength(telephone.trim(), Constants.MAX_LENGTH_50)) {
@@ -458,7 +411,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validatePassword(String password, boolean isEdit) {
         MessageDTO messageDto = null;
-        String label = getLabel(FIELD_PASSWORD_KEY);
+        String label = getLabel(Constants.FIELD_PASSWORD);
         if (commonValidator.isEmpty(password)) {
             if (!isEdit) {
                 messageDto = buildMessage(Constants.ER001, label);
@@ -525,7 +478,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateCertificationId(String certificationId) {
         MessageDTO messageDto = null;
-        String certLabel = getLabel(FIELD_CERTIFICATION_KEY);
+        String certLabel = getLabel(Constants.FIELD_CERTIFICATION);
 
         if (commonValidator.isEmpty(certificationId)) {
             messageDto = buildMessage(Constants.ER001, certLabel);
@@ -545,7 +498,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateStartDate(String startDate) {
         MessageDTO messageDto = null;
-        String startLabel = getLabel(FIELD_START_DATE_KEY);
+        String startLabel = getLabel(Constants.FIELD_START_DATE);
 
         if (commonValidator.isEmpty(startDate)) {
             messageDto = buildMessage(Constants.ER002, startLabel);
@@ -564,7 +517,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateEndDate(String startDate, String endDate) {
         MessageDTO messageDto = null;
-        String endLabel = getLabel(FIELD_END_DATE_KEY);
+        String endLabel = getLabel(Constants.FIELD_END_DATE);
 
         if (commonValidator.isEmpty(endDate)) {
             messageDto = buildMessage(Constants.ER002, endLabel);
@@ -585,7 +538,7 @@ public class EmployeeValidator {
      */
     private MessageDTO validateScore(String score) {
         MessageDTO messageDto = null;
-        String scoreLabel = getLabel(FIELD_SCORE_KEY);
+        String scoreLabel = getLabel(Constants.FIELD_SCORE);
 
         if (commonValidator.isEmpty(score)) {
             messageDto = buildMessage(Constants.ER001, scoreLabel);
@@ -603,7 +556,7 @@ public class EmployeeValidator {
      */
     public void validateGetEmployeeDetail(Long employeeId) {
         MessageDTO messageDto = null;
-        String idLabel = getLabel(FIELD_ID_KEY);
+        String idLabel = getLabel(Constants.FIELD_ID);
         if (employeeId == null) {
             messageDto = buildMessage(Constants.ER001, idLabel);
         } else if (!employeeRepository.existsById(employeeId)) {
@@ -644,7 +597,7 @@ public class EmployeeValidator {
             return false;
         }
         String trimmed = value.trim();
-        if (!commonValidator.isHalfWidthNumber(trimmed, MAX_DEPARTMENT_ID_DIGITS)) {
+        if (!commonValidator.isHalfWidthNumber(trimmed, Constants.MAX_DEPARTMENT_ID_DIGITS)) {
             return false;
         }
         try {
@@ -678,7 +631,7 @@ public class EmployeeValidator {
      * @throws AppException ER001 khi employeeId null, ER014 khi không tìm thấy, ER020 khi xóa tài khoản admin
      */
     public EmployeeEntity validateDeleteEmployee(Long employeeId) {
-        String idLabel = getLabel(FIELD_ID_KEY);
+        String idLabel = getLabel(Constants.FIELD_ID);
         if (employeeId == null) {
             throw new AppException(Constants.ER001, List.of(idLabel));
         }

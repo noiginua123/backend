@@ -243,7 +243,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             EmployeeEntity employee = employeeRepository.findById(employeeId)
                     .orElseThrow(() -> {
                         String idLabel = messageSource != null
-                                ? messageSource.getMessage("field.id", null, LocaleContextHolder.getLocale())
+                                ? messageSource.getMessage(Constants.FIELD_ID, null, LocaleContextHolder.getLocale())
                                 : "ＩＤ";
                         return new AppException(Constants.ER013, List.of(idLabel));
                     });
@@ -326,7 +326,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         if (rows == null || rows.isEmpty()) {
             String idLabel = messageSource != null
-                    ? messageSource.getMessage("field.id", null, LocaleContextHolder.getLocale())
+                    ? messageSource.getMessage(Constants.FIELD_ID, null, LocaleContextHolder.getLocale())
                     : "ＩＤ";
             throw new AppException(Constants.ER013, List.of(idLabel));
         }
@@ -345,7 +345,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteEmployee(Long employeeId) {
         String idLabel = messageSource != null
-                ? messageSource.getMessage("field.id", null, LocaleContextHolder.getLocale())
+                ? messageSource.getMessage(Constants.FIELD_ID, null, LocaleContextHolder.getLocale())
                 : "ＩＤ";
 
         EmployeeEntity employee = employeeRepository.findById(employeeId)

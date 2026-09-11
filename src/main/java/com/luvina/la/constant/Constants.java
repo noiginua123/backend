@@ -206,4 +206,62 @@ public final class Constants {
 
     /** Mã thông báo không tìm thấy người dùng. */
     public static final String MSG005 = "MSG005";
+
+    // =========================================================================
+    // I18N Message Field Keys (messages.properties) & Validation Constants
+    // =========================================================================
+
+    /** Số chữ số tối đa của ID phòng ban / số nguyên nửa độ rộng. */
+    public static final int MAX_DEPARTMENT_ID_DIGITS = 18;
+
+    /** Khóa nhãn trường ID trong messages.properties. */
+    public static final String FIELD_ID = "field.id";
+
+    /** Khóa nhãn trường phòng ban trong messages.properties. */
+    public static final String FIELD_DEPARTMENT_ID = "field.departmentId";
+
+    /** Khóa nhãn trường họ tên trong messages.properties. */
+    public static final String FIELD_FULLNAME = "field.fullname";
+
+    /** Khóa nhãn trường vị trí bắt đầu (offset) trong messages.properties. */
+    public static final String FIELD_OFFSET = "field.offset";
+
+    /** Khóa nhãn trường số bản ghi mỗi trang (limit) trong messages.properties. */
+    public static final String FIELD_LIMIT = "field.limit";
+
+    /** Khóa nhãn trường tên đăng nhập trong messages.properties. */
+    public static final String FIELD_LOGIN_ID = "field.loginId";
+
+    /** Khóa nhãn trường nhóm/phòng ban trong messages.properties. */
+    public static final String FIELD_GROUP = "field.group";
+
+    /** Khóa nhãn trường họ tên Kana trong messages.properties. */
+    public static final String FIELD_FULLNAME_KANA = "field.fullnameKana";
+
+    /** Khóa nhãn trường ngày sinh trong messages.properties. */
+    public static final String FIELD_BIRTH_DATE = "field.birthDate";
+
+    /** Khóa nhãn trường email trong messages.properties. */
+    public static final String FIELD_EMAIL = "field.email";
+
+    /** Khóa nhãn trường số điện thoại trong messages.properties. */
+    public static final String FIELD_TELEPHONE = "field.telephone";
+
+    /** Khóa nhãn trường mật khẩu trong messages.properties. */
+    public static final String FIELD_PASSWORD = "field.password";
+
+    /** Khóa nhãn trường chứng chỉ trong messages.properties. */
+    public static final String FIELD_CERTIFICATION = "field.certification";
+
+    /** Khóa nhãn trường ngày cấp chứng chỉ trong messages.properties. */
+    public static final String FIELD_START_DATE = "field.startDate";
+
+    /** Khóa nhãn trường ngày hết hạn chứng chỉ trong messages.properties. */
+    public static final String FIELD_END_DATE = "field.endDate";
+
+    /** Khóa nhãn trường điểm số chứng chỉ trong messages.properties. */
+    public static final String FIELD_SCORE = "field.score";
+
+    /** Token định dạng email phục vụ hiển thị thông báo lỗi định dạng. */
+    public static final String EMAIL_FORMAT_TOKEN = "email";
 }
