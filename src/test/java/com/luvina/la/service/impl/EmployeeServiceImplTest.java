@@ -74,29 +74,28 @@ class EmployeeServiceImplTest {
     }
 
     /**
-     * Kiểm tra getTotalRecords trả đúng số bản ghi và truyền admin login id xuống Repository.
+     * Kiểm tra getTotalRecords trả đúng số bản ghi từ Repository.
      */
     @Test
     void shouldReturnTotalRecordsFromRepository() {
-        when(employeeRepository.countEmployees("%an%", 5L, Constants.ADMIN_LOGIN_ID))
+        when(employeeRepository.countEmployees("%an%", 5L))
                 .thenReturn(9L);
 
         long total = employeeService.getTotalRecords("%an%", 5L);
 
         assertEquals(9L, total);
-        verify(employeeRepository).countEmployees("%an%", 5L, Constants.ADMIN_LOGIN_ID);
+        verify(employeeRepository).countEmployees("%an%", 5L);
     }
 
     /**
-     * Kiểm tra getEmployees truyền đủ tham số (kèm admin login id) và mapping kết quả.
+     * Kiểm tra getEmployees truyền đủ tham số và mapping kết quả.
      */
     @Test
     void shouldPassArgumentsAndMapRowsWhenSearching() {
         Object[] row = new Object[] {1L};
         EmployeeListDTO dto = mock(EmployeeListDTO.class);
         when(employeeRepository.searchEmployees(
-                "%an%", 5L, "ASC", "DESC", "ASC", "employeeName",
-                Constants.ADMIN_LOGIN_ID, 20, 0
+                "%an%", 5L, "ASC", "DESC", "ASC", "employeeName", 20, 0
         )).thenReturn(Collections.singletonList(row));
         when(employeeMapper.toDTO(row)).thenReturn(dto);
 
@@ -106,8 +105,7 @@ class EmployeeServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(dto, result.get(0));
         verify(employeeRepository).searchEmployees(
-                "%an%", 5L, "ASC", "DESC", "ASC", "employeeName",
-                Constants.ADMIN_LOGIN_ID, 20, 0);
+                "%an%", 5L, "ASC", "DESC", "ASC", "employeeName", 20, 0);
     }
 
     /**
@@ -232,5 +230,16 @@ class EmployeeServiceImplTest {
 
         AppException ex = assertThrows(AppException.class, () -> employeeService.updateEmployee(request));
         assertEquals(Constants.ER013, ex.getCode());
+    }
+
+    /**
+     * Kiểm tra xóa nhân viên gọi đúng repository xóa chứng chỉ và nhân viên.
+     */
+    @Test
+    void shouldDeleteEmployeeAndCertifications() {
+        employeeService.deleteEmployee(10L);
+
+        verify(employeeCertificationRepository).deleteByEmployeeId(10L);
+        verify(employeeRepository).deleteById(10L);
     }
 }

@@ -57,10 +57,10 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
     Optional<EmployeeEntity> findByEmployeeId(Long employeeId);
 
     /**
-     * Đếm tổng số nhân viên (loại trừ tài khoản admin) dùng cho phân trang của ADM002.
+     * Đếm tổng số nhân viên (chỉ lấy vai trò user, loại trừ admin) dùng cho phân trang của ADM002.
      *
      * Query áp dụng lần lượt các điều kiện:
-     * 1. Loại trừ tài khoản quản trị viên (employee_login_id = 'admin').
+     * 1. Chỉ lấy tài khoản có vai trò người dùng (employee_role = 0), loại trừ tài khoản quản trị viên.
      * 2. Lọc phòng ban khi departmentId khác null.
      * 3. Tìm gần đúng tên khi employeeName khác null. Giá trị employeeName đã
      *    được Validator escape và bao quanh bởi ký tự phần trăm.
@@ -70,25 +70,23 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
      *
      * @param employeeName Mẫu LIKE đã được escape, hoặc null nếu không tìm theo tên
      * @param departmentId ID phòng ban, hoặc null nếu lấy tất cả phòng ban
-     * @param adminLoginId Tên đăng nhập admin cần loại trừ
-     * @return Tổng số nhân viên thỏa mãn điều kiện tìm kiếm (không bao gồm admin)
+     * @return Tổng số nhân viên thỏa mãn điều kiện tìm kiếm (chỉ gồm vai trò user)
      */
     @Query(value = """
             SELECT COUNT(e.employee_id)
             FROM employees e
-            WHERE e.employee_login_id != :adminLoginId
+            WHERE e.employee_role = 0
               AND (:departmentId IS NULL OR e.department_id = :departmentId)
               AND (:employeeName IS NULL OR e.employee_name LIKE :employeeName ESCAPE '!')
             """, nativeQuery = true)
     long countEmployees(@Param("employeeName") String employeeName,
-                        @Param("departmentId") Long departmentId,
-                        @Param("adminLoginId") String adminLoginId);
+                        @Param("departmentId") Long departmentId);
 
     /**
-     * Lấy danh sách nhân viên (loại trừ tài khoản admin) theo điều kiện tìm kiếm và phân trang.
+     * Lấy danh sách nhân viên (chỉ lấy vai trò user, loại trừ admin) theo điều kiện tìm kiếm và phân trang.
      *
      * Luồng xử lý của native query:
-     * 1. Lấy thông tin cơ bản từ employees và departments (loại bỏ admin).
+     * 1. Lấy thông tin cơ bản từ employees và departments (chỉ lấy tài khoản có employee_role = 0).
      * 2. Subquery trong LEFT JOIN chỉ chọn một chứng chỉ cao nhất của mỗi nhân viên.
      *    Cấp có certification_level nhỏ hơn được ưu tiên; nếu cùng cấp thì chọn
      *    end_date mới hơn, sau đó chọn employee_certification_id lớn hơn.
@@ -109,7 +107,6 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
      * @param ordCertificationName ASC/DESC để sort chứng chỉ, hoặc chuỗi rỗng
      * @param ordEndDate ASC/DESC để sort ngày hết hạn, hoặc chuỗi rỗng
      * @param prioritySort Cột ưu tiên làm tiêu chí sort chính (employeeName / certificationName / endDate)
-     * @param adminLoginId Tên đăng nhập admin cần loại trừ
      * @param limit Số bản ghi tối đa cần lấy
      * @param offset Vị trí bản ghi bắt đầu lấy
      * @return Danh sách mảng cột, mỗi phần tử tương ứng một nhân viên
@@ -144,7 +141,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
                 )
             LEFT JOIN certifications c
                 ON c.certification_id = ec.certification_id
-            WHERE e.employee_login_id != :adminLoginId
+            WHERE e.employee_role = 0
               AND (:departmentId IS NULL OR e.department_id = :departmentId)
               AND (:employeeName IS NULL OR e.employee_name LIKE :employeeName ESCAPE '!')
             ORDER BY
@@ -173,7 +170,6 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
             @Param("ordCertificationName") String ordCertificationName,
             @Param("ordEndDate") String ordEndDate,
             @Param("prioritySort") String prioritySort,
-            @Param("adminLoginId") String adminLoginId,
             @Param("limit") int limit,
             @Param("offset") int offset
     );
@@ -208,6 +204,7 @@ public interface EmployeeRepository extends JpaRepository<EmployeeEntity, Long> 
             LEFT JOIN certifications c
                 ON c.certification_id = ec.certification_id
             WHERE e.employee_id = :employeeId
+              AND e.employee_role = 0
             ORDER BY c.certification_level ASC
             """, nativeQuery = true)
     List<Object[]> findEmployeeDetail(@Param("employeeId") Long employeeId);

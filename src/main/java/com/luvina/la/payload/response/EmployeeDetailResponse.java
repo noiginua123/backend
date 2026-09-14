@@ -36,6 +36,9 @@ public class EmployeeDetailResponse implements Serializable {
     /** Mã trạng thái (200 khi thành công). */
     private Long code;
 
+    /** Thông báo lỗi hoặc kết quả (null khi thành công). */
+    private MessageResponse message;
+
     /** ID nhân viên. */
     private Long employeeId;
 
@@ -65,6 +68,17 @@ public class EmployeeDetailResponse implements Serializable {
 
     /** Danh sách chứng chỉ tiếng Nhật của nhân viên. */
     private List<EmployeeCertificationDTO> certifications;
+
+    /**
+     * Khởi tạo EmployeeDetailResponse từ mã code và thông báo lỗi.
+     *
+     * @param code Mã trạng thái trả về
+     * @param message Thông báo lỗi
+     */
+    public EmployeeDetailResponse(Long code, MessageResponse message) {
+        this.code = code;
+        this.message = message;
+    }
 
     /**
      * Khởi tạo EmployeeDetailResponse từ mã code và DTO chi tiết nhân viên.

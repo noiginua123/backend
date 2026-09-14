@@ -169,14 +169,6 @@ public class EmployeeController {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<EmployeeResponse> addEmployee(EmployeeRequest request) {
-        return addEmployee(null, request);
-    }
-
-    public ResponseEntity<EmployeeResponse> updateEmployee(EmployeeRequest request) {
-        return updateEmployee(null, request);
-    }
-
     /**
      * API lấy thông tin chi tiết một nhân viên theo ID (ADM003 / ADM004).
      *
@@ -186,7 +178,13 @@ public class EmployeeController {
     @GetMapping("/{employeeId}")
     public ResponseEntity<EmployeeDetailResponse> getEmployeeDetail(
             @PathVariable("employeeId") Long employeeId) {
-        employeeValidator.validateGetEmployeeDetail(employeeId);
+        MessageDTO messageDto = employeeValidator.validateGetEmployeeDetail(employeeId);
+        if (messageDto != null) {
+            MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
+            EmployeeDetailResponse errorResponse = new EmployeeDetailResponse(Constants.CODE_ERROR, messageResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+
         EmployeeDetailDTO employeeDetailDTO = employeeService.getEmployeeDetail(employeeId);
         EmployeeDetailResponse response = new EmployeeDetailResponse(
                 Constants.CODE_SUCCESS,
@@ -217,7 +215,13 @@ public class EmployeeController {
     @DeleteMapping("/{employeeId}")
     public ResponseEntity<EmployeeResponse> deleteEmployee(
             @PathVariable("employeeId") Long employeeId) {
-        employeeValidator.validateDeleteEmployee(employeeId);
+        MessageDTO messageDto = employeeValidator.validateDeleteEmployee(employeeId);
+        if (messageDto != null) {
+            MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
+            EmployeeResponse errorResponse = new EmployeeResponse(Constants.CODE_ERROR, null, messageResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+
         employeeService.deleteEmployee(employeeId);
 
         MessageResponse message = new MessageResponse(Constants.MSG003, new ArrayList<>());

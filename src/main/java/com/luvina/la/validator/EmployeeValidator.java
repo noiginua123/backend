@@ -552,19 +552,18 @@ public class EmployeeValidator {
      * Kiểm tra tính hợp lệ của employeeId cho chức năng lấy chi tiết nhân viên (ADM003 / ADM004).
      *
      * @param employeeId ID của nhân viên cần lấy chi tiết
-     * @throws AppException ER001 khi employeeId null, ER013 khi nhân viên không tồn tại
+     * @return MessageDTO chứa thông tin lỗi nếu không hợp lệ, hoặc null nếu hợp lệ
      */
-    public void validateGetEmployeeDetail(Long employeeId) {
-        MessageDTO messageDto = null;
+    public MessageDTO validateGetEmployeeDetail(Long employeeId) {
         String idLabel = getLabel(Constants.FIELD_ID);
         if (employeeId == null) {
-            messageDto = buildMessage(Constants.ER001, idLabel);
-        } else if (!employeeRepository.existsById(employeeId)) {
-            messageDto = buildMessage(Constants.ER013, idLabel);
+            return buildMessage(Constants.ER001, idLabel);
         }
-        if (messageDto != null) {
-            throw new AppException(messageDto.getCode(), messageDto.getParams());
+        EmployeeEntity employee = employeeRepository.findById(employeeId).orElse(null);
+        if (employee == null || Constants.ROLE_ADMIN == employee.getRole()) {
+            return buildMessage(Constants.ER013, idLabel);
         }
+        return null;
     }
 
     /**
@@ -627,22 +626,23 @@ public class EmployeeValidator {
      * Kiểm tra tính hợp lệ của employeeId cho chức năng xóa nhân viên (ADM003).
      *
      * @param employeeId ID của nhân viên cần xóa
-     * @return EmployeeEntity nếu thông tin hợp lệ
-     * @throws AppException ER001 khi employeeId null, ER014 khi không tìm thấy, ER020 khi xóa tài khoản admin
+     * @return MessageDTO chứa thông tin lỗi nếu không hợp lệ, hoặc null nếu hợp lệ
      */
-    public EmployeeEntity validateDeleteEmployee(Long employeeId) {
+    public MessageDTO validateDeleteEmployee(Long employeeId) {
         String idLabel = getLabel(Constants.FIELD_ID);
         if (employeeId == null) {
-            throw new AppException(Constants.ER001, List.of(idLabel));
+            return buildMessage(Constants.ER001, idLabel);
         }
-        EmployeeEntity employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new AppException(Constants.ER014, List.of(idLabel)));
+        EmployeeEntity employee = employeeRepository.findById(employeeId).orElse(null);
+        if (employee == null) {
+            return buildMessage(Constants.ER014, idLabel);
+        }
 
         if (Constants.ROLE_ADMIN == employee.getRole()
                 || Constants.ADMIN_LOGIN_ID.equals(employee.getEmployeeLoginId())) {
-            throw new AppException(Constants.ER020);
+            return buildMessage(Constants.ER020);
         }
-        return employee;
+        return null;
     }
 
     /**
