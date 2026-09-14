@@ -194,7 +194,7 @@ public class EmployeeController {
     }
 
     /**
-     * API kiểm tra sự tồn tại của nhân viên theo ID (siêu nhẹ, không fetch chi tiết).
+     * API kiểm tra sự tồn tại của nhân viên theo ID.
      *
      * @param employeeId ID nhân viên cần kiểm tra
      * @return ResponseEntity chứa boolean true nếu tồn tại, false nếu không
