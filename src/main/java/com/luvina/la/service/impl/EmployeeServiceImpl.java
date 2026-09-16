@@ -87,23 +87,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         this.messageSource = messageSource;
     }
 
-    /**
-     * Constructor tương thích cho các bài kiểm thử đơn vị.
-     *
-     * @param employeeRepository              Repository truy vấn dữ liệu nhân viên
-     * @param employeeMapper                  Mapper chuyển mảng cột native query sang DTO
-     * @param employeeCertificationRepository Repository chứng chỉ của nhân viên
-     * @param passwordEncoder                 Bộ mã hóa mật khẩu
-     * @param commonValidator                 Validator dùng chung
-     */
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository,
-            EmployeeMapper employeeMapper,
-            EmployeeCertificationRepository employeeCertificationRepository,
-            PasswordEncoder passwordEncoder,
-            CommonValidator commonValidator) {
-        this(employeeRepository, employeeMapper, employeeCertificationRepository,
-                passwordEncoder, commonValidator, null);
-    }
 
     /**
      * Đếm tổng số nhân viên thỏa mãn điều kiện, loại trừ tài khoản admin.
@@ -165,6 +148,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long addEmployee(EmployeeRequest employeeRequest) {
+        // 1. Tạo mới thực thể EmployeeEntity và gán dữ liệu từ request (mã hóa mật khẩu bằng BCrypt)
         EmployeeEntity employee = new EmployeeEntity();
         employee.setEmployeeLoginId(employeeRequest.getEmployeeLoginId().trim());
         employee.setEmployeeName(employeeRequest.getEmployeeName().trim());
@@ -178,11 +162,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setDepartmentId(Long.valueOf(employeeRequest.getDepartmentId().trim()));
         employee.setRole(Constants.ROLE_USER);
 
+        // 2. Lưu nhân viên mới vào bảng tbl_employee để sinh ID tự động
         EmployeeEntity employeeEntity = employeeRepository.save(employee);
 
+        // 3. Lưu danh sách chứng chỉ của nhân viên nếu có chọn
         List<CertificationRequest> certifications = employeeRequest.getCertifications();
         if (certifications != null) {
             for (CertificationRequest certification : certifications) {
+                // Bỏ qua nếu dòng chứng chỉ rỗng hoặc chưa chọn mã chứng chỉ
                 if (certification == null
                         || commonValidator.isEmpty(certification.getCertificationId())) {
                     continue;
@@ -215,15 +202,25 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional(rollbackFor = Exception.class)
     public Long updateEmployee(EmployeeRequest employeeRequest) {
         try {
+            // 1. Kiểm tra sự tồn tại của nhân viên trong DB theo ID (chống lỗi đồng thời race-condition)
             Long employeeId = Long.valueOf(employeeRequest.getEmployeeId().trim());
             EmployeeEntity employee = employeeRepository.findById(employeeId)
                     .orElseThrow(() -> {
-                        String idLabel = messageSource != null
-                                ? messageSource.getMessage(Constants.FIELD_ID, null, LocaleContextHolder.getLocale())
-                                : "ＩＤ";
+                        String idLabel = "ＩＤ";
+                        if (messageSource != null) {
+                            try {
+                                String msg = messageSource.getMessage(Constants.FIELD_ID, null, LocaleContextHolder.getLocale());
+                                if (msg != null && !msg.trim().isEmpty()) {
+                                    idLabel = msg;
+                                }
+                            } catch (Exception ignored) {
+                                // Sử dụng nhãn mặc định nếu không nạp được message
+                            }
+                        }
                         return new AppException(Constants.ER013, List.of(idLabel));
                     });
 
+            // 2. Cập nhật các trường thông tin cá nhân của nhân viên
             employee.setDepartmentId(Long.valueOf(employeeRequest.getDepartmentId().trim()));
             employee.setEmployeeName(employeeRequest.getEmployeeName().trim());
             employee.setEmployeeNameKana(employeeRequest.getEmployeeNameKana().trim());
@@ -234,21 +231,24 @@ public class EmployeeServiceImpl implements EmployeeService {
             employee.setEmployeeTelephone(employeeRequest.getEmployeeTelephone().trim());
             employee.setEmployeeLoginId(employeeRequest.getEmployeeLoginId().trim());
 
-            // Chỉ cập nhật mật khẩu nếu có nhập mật khẩu mới
+            // 3. Chỉ cập nhật mật khẩu khi người dùng nhập mật khẩu mới (mã hóa BCrypt trước khi lưu)
             if (!commonValidator.isEmpty(employeeRequest.getEmployeeLoginPassword())) {
                 employee.setEmployeeLoginPassword(passwordEncoder.encode(employeeRequest.getEmployeeLoginPassword()));
             }
 
+            // 4. Lưu thông tin nhân viên cập nhật vào bảng tbl_employee
             employeeRepository.save(employee);
 
-            // Xóa toàn bộ chứng chỉ cũ
+            // 5. Xóa toàn bộ chứng chỉ cũ liên quan của nhân viên
             employeeCertificationRepository.deleteByEmployeeId(employeeId);
+            // Ép Hibernate đẩy lệnh DELETE xuống DB ngay lập tức để tránh xung đột trước khi insert mới
             employeeCertificationRepository.flush();
 
-            // Thêm chứng chỉ mới nếu có
+            // 6. Thêm danh sách chứng chỉ mới nếu có chọn
             List<CertificationRequest> certifications = employeeRequest.getCertifications();
             if (certifications != null) {
                 for (CertificationRequest certification : certifications) {
+                    // Bỏ qua nếu dòng chứng chỉ rỗng hoặc chưa chọn mã chứng chỉ
                     if (certification == null
                             || commonValidator.isEmpty(certification.getCertificationId())) {
                         continue;
@@ -269,8 +269,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             return employeeId;
         } catch (AppException e) {
+            // Ném lại lỗi nghiệp vụ (ER013...) để Transaction kích hoạt Rollback và Controller nhận đúng mã lỗi
             throw e;
         } catch (Exception e) {
+            // Bọc tất cả lỗi không mong muốn của DB/hệ thống thành ER015 và kích hoạt Rollback an toàn
             throw new AppException(Constants.ER015);
         }
     }
@@ -311,7 +313,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteEmployee(Long employeeId) {
+        // 1. Xóa toàn bộ chứng chỉ liên quan của nhân viên trong bảng con (tbl_employee_certification)
         employeeCertificationRepository.deleteByEmployeeId(employeeId);
+
+        // 2. Xóa thông tin nhân viên trong bảng cha (tbl_employee)
         employeeRepository.deleteById(employeeId);
     }
 }

@@ -127,17 +127,19 @@ public class EmployeeController {
      */
     @PostMapping
     public ResponseEntity<EmployeeResponse> addEmployee(
-            @RequestParam(value = "mode", required = false) String mode,
             @RequestBody EmployeeRequest request) {
-        boolean isEdit = "edit".equalsIgnoreCase(mode);
-        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request, isEdit);
+        // 1. Kiểm tra tính hợp lệ dữ liệu đầu vào cho chức năng thêm mới nhân viên (không kiểm tra employeeId)
+        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request, false);
         if (messageDto != null) {
             MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
             EmployeeResponse errorResponse = new EmployeeResponse(Constants.CODE_ERROR, null, messageResponse);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
 
+        // 2. Gọi service thực hiện thêm mới nhân viên kèm chứng chỉ vào cơ sở dữ liệu
         Long employeeId = employeeService.addEmployee(request);
+
+        // 3. Đóng gói response thành công kèm mã MSG001 và ID nhân viên vừa tạo
         MessageResponse message = new MessageResponse(Constants.MSG001, new ArrayList<>());
         EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);
         return ResponseEntity.ok(response);
@@ -147,23 +149,24 @@ public class EmployeeController {
      * API cập nhật thông tin nhân viên vào hệ thống (ADM004).
      * Thực hiện kiểm tra tính hợp lệ của dữ liệu đầu vào trước khi cập nhật vào cơ sở dữ liệu.
      *
-     * @param mode    Chế độ thao tác từ URL (ví dụ: mode=edit)
-     * @param request Dữ liệu thông tin nhân viên cần chỉnh sửa từ form ADM004
+     * @param request Dữ liệu thông tin nhân viên cần chỉnh sửa từ form ADM004 (bắt buộc chứa employeeId)
      * @return ResponseEntity chứa EmployeeResponse kèm ID nhân viên và thông báo kết quả (MSG002)
      */
     @PutMapping
     public ResponseEntity<EmployeeResponse> updateEmployee(
-            @RequestParam(value = "mode", required = false) String mode,
             @RequestBody EmployeeRequest request) {
-        boolean isEdit = mode == null || !"add".equalsIgnoreCase(mode);
-        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request, isEdit);
+        // 1. Kiểm tra tính hợp lệ dữ liệu đầu vào cho chức năng chỉnh sửa nhân viên (kiểm tra employeeId bắt buộc và tồn tại)
+        MessageDTO messageDto = employeeValidator.validateAddEditEmployee(request, true);
         if (messageDto != null) {
             MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
             EmployeeResponse errorResponse = new EmployeeResponse(Constants.CODE_ERROR, null, messageResponse);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
 
+        // 2. Gọi service thực hiện cập nhật thông tin nhân viên và chứng chỉ trong cơ sở dữ liệu
         Long employeeId = employeeService.updateEmployee(request);
+
+        // 3. Đóng gói response thành công kèm mã MSG002 và ID nhân viên vừa cập nhật
         MessageResponse message = new MessageResponse(Constants.MSG002, new ArrayList<>());
         EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);
         return ResponseEntity.ok(response);
@@ -178,6 +181,7 @@ public class EmployeeController {
     @GetMapping("/{employeeId}")
     public ResponseEntity<EmployeeDetailResponse> getEmployeeDetail(
             @PathVariable("employeeId") Long employeeId) {
+        // 1. Kiểm tra tính hợp lệ của employeeId (bắt buộc, phải tồn tại và không phải admin)
         MessageDTO messageDto = employeeValidator.validateGetEmployeeDetail(employeeId);
         if (messageDto != null) {
             MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
@@ -185,7 +189,10 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
 
+        // 2. Gọi service lấy thông tin chi tiết nhân viên kèm danh sách chứng chỉ
         EmployeeDetailDTO employeeDetailDTO = employeeService.getEmployeeDetail(employeeId);
+
+        // 3. Đóng gói response thành công với mã 200 và dữ liệu chi tiết
         EmployeeDetailResponse response = new EmployeeDetailResponse(
                 Constants.CODE_SUCCESS,
                 employeeDetailDTO
@@ -202,6 +209,7 @@ public class EmployeeController {
     @GetMapping("/{employeeId}/exists")
     public ResponseEntity<Boolean> checkEmployeeExists(
             @PathVariable("employeeId") Long employeeId) {
+        // Gọi service kiểm tra sự tồn tại của nhân viên theo ID
         boolean exists = employeeService.checkExistsEmployeeById(employeeId);
         return ResponseEntity.ok(exists);
     }
@@ -215,6 +223,7 @@ public class EmployeeController {
     @DeleteMapping("/{employeeId}")
     public ResponseEntity<EmployeeResponse> deleteEmployee(
             @PathVariable("employeeId") Long employeeId) {
+        // 1. Kiểm tra tính hợp lệ của employeeId (phải tồn tại và không được phép xóa admin)
         MessageDTO messageDto = employeeValidator.validateDeleteEmployee(employeeId);
         if (messageDto != null) {
             MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
@@ -222,8 +231,10 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
 
+        // 2. Gọi service thực hiện xóa nhân viên và toàn bộ chứng chỉ liên quan khỏi cơ sở dữ liệu
         employeeService.deleteEmployee(employeeId);
 
+        // 3. Đóng gói response thành công kèm mã MSG003 và ID nhân viên vừa xóa
         MessageResponse message = new MessageResponse(Constants.MSG003, new ArrayList<>());
         EmployeeResponse response = new EmployeeResponse(Constants.CODE_SUCCESS, employeeId, message);
         return ResponseEntity.ok(response);

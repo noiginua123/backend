@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.MessageSource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.luvina.la.constant.Constants;
@@ -53,6 +54,8 @@ class EmployeeServiceImplTest {
 
     private PasswordEncoder passwordEncoder;
 
+    private MessageSource messageSource;
+
     private EmployeeServiceImpl employeeService;
 
     /**
@@ -64,12 +67,14 @@ class EmployeeServiceImplTest {
         employeeMapper = mock(EmployeeMapper.class);
         employeeCertificationRepository = mock(EmployeeCertificationRepository.class);
         passwordEncoder = mock(PasswordEncoder.class);
+        messageSource = mock(MessageSource.class);
         employeeService = new EmployeeServiceImpl(
                 employeeRepository,
                 employeeMapper,
                 employeeCertificationRepository,
                 passwordEncoder,
-                new CommonValidator()
+                new CommonValidator(),
+                messageSource
         );
     }
 

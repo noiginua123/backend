@@ -47,9 +47,7 @@ You can use "Postman" to run the test: `https://www.postman.com`
 
     Ex:
     curl -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlzcyI6InNlbGYiLCJleHAiOjE2NzcwMTI0MTgsImlhdCI6MTY3NjQzNjQxOH0.jlBId03AYp5gRn1aTY2YinWPzTIZzmSgMzXujlvpkIAmseH7TpL4FCfdJLvZFFtlLjN9Pe_AYfcMtdTwJLm_OA" \
-        -X POST http://localhost:8085/test-auth
-    
-    Output: {"msg":"Token is valid"}
+        -X GET http://localhost:8085/department
 
 ## Source code structure
 #### Source code java

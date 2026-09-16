@@ -186,7 +186,7 @@ class EmployeeControllerTest {
     void shouldReturn500WhenAddEmployeeValidationFails() {
         EmployeeRequest invalidRequest = new EmployeeRequest();
 
-        ResponseEntity<EmployeeResponse> response = employeeController.addEmployee(null, invalidRequest);
+        ResponseEntity<EmployeeResponse> response = employeeController.addEmployee(invalidRequest);
 
         verify(employeeService, never()).addEmployee(any());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -203,7 +203,7 @@ class EmployeeControllerTest {
     void shouldReturn500WhenUpdateEmployeeValidationFails() {
         EmployeeRequest invalidRequest = new EmployeeRequest();
 
-        ResponseEntity<EmployeeResponse> response = employeeController.updateEmployee(null, invalidRequest);
+        ResponseEntity<EmployeeResponse> response = employeeController.updateEmployee(invalidRequest);
 
         verify(employeeService, never()).updateEmployee(any());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
@@ -229,7 +229,7 @@ class EmployeeControllerTest {
         validRequest.setEmployeeTelephone("0123456789");
         validRequest.setEmployeeLoginPassword("");
 
-        ResponseEntity<EmployeeResponse> response = employeeController.updateEmployee(null, validRequest);
+        ResponseEntity<EmployeeResponse> response = employeeController.updateEmployee(validRequest);
 
         verify(employeeService).updateEmployee(validRequest);
         assertEquals(HttpStatus.OK, response.getStatusCode());

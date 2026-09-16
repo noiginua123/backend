@@ -22,13 +22,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller tiếp nhận và xử lý các yêu cầu xác thực người dùng (Đăng nhập, kiểm tra Token).
+ * Controller tiếp nhận và xử lý các yêu cầu xác thực người dùng (Đăng nhập).
  *
  * @author thanhvinh
  */
@@ -87,17 +86,5 @@ public class AuthController {
             errors.put("code", "000");
         }
         return new LoginResponse(errors);
-    }
-
-    /**
-     * API kiểm tra token xác thực người dùng có hợp lệ hay không.
-     *
-     * @return Map chứa thông báo kết quả kiểm tra token
-     */
-    @GetMapping("/test-auth")
-    public Map<String, String> testAuth() {
-        Map<String, String> testData = new HashMap<>();
-        testData.put("msg", "Token is valid");
-        return testData;
     }
 }
