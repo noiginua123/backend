@@ -16,9 +16,9 @@ import com.luvina.la.constant.Constants;
 import com.luvina.la.constant.SortOrder;
 import com.luvina.la.dto.MessageDTO;
 import com.luvina.la.entity.EmployeeEntity;
-import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
+import com.luvina.la.payload.request.EmployeeSearchRequest;
 import com.luvina.la.repository.CertificationRepository;
 import com.luvina.la.repository.DepartmentRepository;
 import com.luvina.la.repository.EmployeeRepository;
@@ -70,105 +70,160 @@ public class EmployeeValidator {
     }
 
     /**
+     * Kiểm tra tính hợp lệ của các tham số tìm kiếm danh sách nhân viên (ADM002).
+     * Thứ tự kiểm tra quyết định mã lỗi trả về trước tiên theo đặc tả:
+     * 1. Hướng sắp xếp tên nhân viên (ordEmployeeName) -> ER021
+     * 2. Hướng sắp xếp tên chứng chỉ (ordCertificationName) -> ER021
+     * 3. Hướng sắp xếp ngày hết hạn (ordEndDate) -> ER021
+     * 4. Độ dài tên nhân viên (tối đa 125 ký tự) -> ER006
+     * 5. ID phòng ban (số nguyên dương) -> ER018
+     * 6. Vị trí bắt đầu offset (số nguyên không âm) -> ER018
+     * 7. Số bản ghi mỗi trang limit (số nguyên dương) -> ER018
+     *
+     * @param request Đối tượng chứa các tham số tìm kiếm
+     * @return MessageDTO chứa thông tin lỗi nếu không hợp lệ, hoặc null nếu hợp lệ
+     */
+    public MessageDTO validateSearchEmployees(EmployeeSearchRequest request) {
+        if (request == null) {
+            return null;
+        }
+
+        // 1. Kiểm tra các tham số sắp xếp (chỉ chấp nhận rỗng, ASC hoặc DESC)
+        MessageDTO messageDto = validateSortOrder(request.getOrdEmployeeName());
+        if (messageDto != null) {
+            return messageDto;
+        }
+        messageDto = validateSortOrder(request.getOrdCertificationName());
+        if (messageDto != null) {
+            return messageDto;
+        }
+        messageDto = validateSortOrder(request.getOrdEndDate());
+        if (messageDto != null) {
+            return messageDto;
+        }
+
+        // 2. Kiểm tra độ dài tên nhân viên (tối đa 125 ký tự)
+        messageDto = validateSearchEmployeeName(request.getEmployeeName());
+        if (messageDto != null) {
+            return messageDto;
+        }
+
+        // 3. Kiểm tra ID phòng ban (nếu có thì phải là số nguyên dương)
+        messageDto = validateSearchDepartmentId(request.getDepartmentId());
+        if (messageDto != null) {
+            return messageDto;
+        }
+
+        // 4. Kiểm tra offset (số nguyên không âm)
+        messageDto = validateSearchOffset(request.getOffset());
+        if (messageDto != null) {
+            return messageDto;
+        }
+
+        // 5. Kiểm tra limit (số nguyên dương)
+        messageDto = validateSearchLimit(request.getLimit());
+        if (messageDto != null) {
+            return messageDto;
+        }
+
+        return null;
+    }
+
+    /**
      * Kiểm tra hướng sắp xếp, chỉ chấp nhận rỗng, ASC hoặc DESC.
      *
      * @param order Hướng sắp xếp
-     * @throws AppException Khi hướng sắp xếp không hợp lệ
+     * @return MessageDTO chứa ER021 nếu không hợp lệ, hoặc null nếu hợp lệ
      */
-    public void validateSortOrder(String order) {
+    public MessageDTO validateSortOrder(String order) {
         if (!commonValidator.isEmpty(order)) {
             String trimmedOrder = order.trim();
             if (!SortOrder.isSupported(trimmedOrder)) {
-                throw new AppException(Constants.ER021);
+                return buildMessage(Constants.ER021);
             }
         }
+        return null;
     }
 
     /**
-     * Kiểm tra và chuyển offset sang số nguyên không âm.
-     *
-     * @param offset Offset dạng chuỗi
-     * @return Offset hợp lệ
-     * @throws AppException Khi offset không phải số nguyên không âm
-     */
-    public int validateAndParseOffset(String offset) {
-        return commonValidator.parseUnsignedInt(
-                offset,
-                Constants.DEFAULT_EMPLOYEE_OFFSET,
-                true,
-                getLabel(Constants.FIELD_OFFSET)
-        );
-    }
-
-    /**
-     * Kiểm tra và chuyển limit sang số nguyên dương.
-     *
-     * @param limit Limit dạng chuỗi
-     * @return Limit hợp lệ
-     * @throws AppException Khi limit không phải số nguyên dương
-     */
-    public int validateAndParseLimit(String limit) {
-        return commonValidator.parseUnsignedInt(
-                limit,
-                Constants.DEFAULT_EMPLOYEE_PAGE_SIZE,
-                false,
-                getLabel(Constants.FIELD_LIMIT)
-        );
-    }
-
-    /**
-     * Chuyển ID phòng ban sang số nguyên dương.
-     *
-     * @param departmentId ID phòng ban dạng chuỗi
-     * @return ID phòng ban hoặc null
-     * @throws AppException Khi ID phòng ban không hợp lệ
-     */
-    public Long parseDepartmentId(String departmentId) {
-        if (commonValidator.isEmpty(departmentId)) {
-            return null;
-        }
-
-        String trimmedDepartmentId = departmentId.trim();
-        if (!commonValidator.isHalfWidthNumber(
-                trimmedDepartmentId,
-                Constants.MAX_DEPARTMENT_ID_DIGITS
-        )) {
-            throw new AppException(
-                    Constants.ER018,
-                    List.of(getLabel(Constants.FIELD_DEPARTMENT_ID))
-            );
-        }
-
-        Long parsedDepartmentId = Long.valueOf(trimmedDepartmentId);
-        if (parsedDepartmentId == 0L) {
-            throw new AppException(
-                    Constants.ER018,
-                    List.of(getLabel(Constants.FIELD_DEPARTMENT_ID))
-            );
-        }
-        return parsedDepartmentId;
-    }
-
-    /**
-     * Kiểm tra độ dài và escape tên nhân viên cho điều kiện LIKE.
+     * Kiểm tra độ dài tên nhân viên tìm kiếm không vượt quá 125 ký tự.
      *
      * @param employeeName Tên nhân viên cần tìm kiếm
-     * @return Mẫu LIKE đã escape hoặc null
-     * @throws AppException Khi tên nhân viên vượt quá 125 ký tự
+     * @return MessageDTO chứa ER006 nếu vượt quá 125 ký tự, hoặc null nếu hợp lệ
      */
-    public String validateAndEscapeEmployeeName(String employeeName) {
-        if (employeeName == null) {
-            return null;
+    public MessageDTO validateSearchEmployeeName(String employeeName) {
+        if (employeeName != null) {
+            int characterCount = employeeName.codePointCount(0, employeeName.length());
+            if (characterCount > Constants.EMPLOYEE_NAME_MAX_LENGTH) {
+                return buildMessage(
+                        Constants.ER006,
+                        Constants.EMPLOYEE_NAME_MAX_LENGTH,
+                        getLabel(Constants.FIELD_FULLNAME)
+                );
+            }
         }
+        return null;
+    }
 
-        int characterCount = employeeName.codePointCount(0, employeeName.length());
-        if (characterCount > Constants.EMPLOYEE_NAME_MAX_LENGTH) {
-            throw new AppException(
-                    Constants.ER006,
-                    List.of(Constants.EMPLOYEE_NAME_MAX_LENGTH, getLabel(Constants.FIELD_FULLNAME))
-            );
+    /**
+     * Kiểm tra ID phòng ban tìm kiếm (nếu có thì phải là số nguyên dương).
+     *
+     * @param departmentId ID phòng ban dạng chuỗi
+     * @return MessageDTO chứa ER018 nếu không hợp lệ, hoặc null nếu hợp lệ
+     */
+    public MessageDTO validateSearchDepartmentId(String departmentId) {
+        if (!commonValidator.isEmpty(departmentId)) {
+            String trimmedDepartmentId = departmentId.trim();
+            if (!commonValidator.isHalfWidthNumber(trimmedDepartmentId, Constants.MAX_DEPARTMENT_ID_DIGITS)
+                    || "0".equals(trimmedDepartmentId)) {
+                return buildMessage(
+                        Constants.ER018,
+                        getLabel(Constants.FIELD_DEPARTMENT_ID)
+                );
+            }
         }
+        return null;
+    }
 
+    /**
+     * Kiểm tra tham số offset tìm kiếm (nếu có thì phải là số nguyên không âm).
+     *
+     * @param offset Offset dạng chuỗi
+     * @return MessageDTO chứa ER018 nếu không hợp lệ, hoặc null nếu hợp lệ
+     */
+    public MessageDTO validateSearchOffset(String offset) {
+        if (!commonValidator.isEmpty(offset)) {
+            String trimmedOffset = offset.trim();
+            if (!commonValidator.isHalfWidthNumber(trimmedOffset, 9)) {
+                return buildMessage(Constants.ER018, getLabel(Constants.FIELD_OFFSET));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Kiểm tra tham số limit tìm kiếm (nếu có thì phải là số nguyên dương).
+     *
+     * @param limit Limit dạng chuỗi
+     * @return MessageDTO chứa ER018 nếu không hợp lệ, hoặc null nếu hợp lệ
+     */
+    public MessageDTO validateSearchLimit(String limit) {
+        if (!commonValidator.isEmpty(limit)) {
+            String trimmedLimit = limit.trim();
+            if (!commonValidator.isHalfWidthNumber(trimmedLimit, 9) || "0".equals(trimmedLimit)) {
+                return buildMessage(Constants.ER018, getLabel(Constants.FIELD_LIMIT));
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Chuẩn hóa và escape tên nhân viên cho điều kiện LIKE sau khi đã validate.
+     *
+     * @param employeeName Tên nhân viên cần tìm kiếm
+     * @return Mẫu LIKE đã escape hoặc null nếu rỗng
+     */
+    public String escapeEmployeeName(String employeeName) {
         if (commonValidator.isEmpty(employeeName)) {
             return null;
         }
@@ -178,6 +233,45 @@ public class EmployeeValidator {
                 .replace("%", "!%")
                 .replace("_", "!_");
         return "%" + escapedEmployeeName + "%";
+    }
+
+    /**
+     * Parse ID phòng ban sang Long sau khi đã qua validate.
+     *
+     * @param departmentId ID phòng ban dạng chuỗi
+     * @return ID phòng ban dạng Long hoặc null nếu rỗng
+     */
+    public Long parseDepartmentId(String departmentId) {
+        if (commonValidator.isEmpty(departmentId)) {
+            return null;
+        }
+        return Long.valueOf(departmentId.trim());
+    }
+
+    /**
+     * Parse offset sang số nguyên sau khi đã qua validate.
+     *
+     * @param offset Offset dạng chuỗi
+     * @return Offset nguyên hoặc giá trị mặc định nếu rỗng
+     */
+    public int parseOffset(String offset) {
+        if (commonValidator.isEmpty(offset)) {
+            return Constants.DEFAULT_EMPLOYEE_OFFSET;
+        }
+        return Integer.parseInt(offset.trim());
+    }
+
+    /**
+     * Parse limit sang số nguyên sau khi đã qua validate.
+     *
+     * @param limit Limit dạng chuỗi
+     * @return Limit nguyên hoặc giá trị mặc định nếu rỗng
+     */
+    public int parseLimit(String limit) {
+        if (commonValidator.isEmpty(limit)) {
+            return Constants.DEFAULT_EMPLOYEE_PAGE_SIZE;
+        }
+        return Integer.parseInt(limit.trim());
     }
 
     /**

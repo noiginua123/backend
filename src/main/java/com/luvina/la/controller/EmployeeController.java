@@ -76,16 +76,20 @@ public class EmployeeController {
     @GetMapping
     public ResponseEntity<ListEmployeeResponse> getEmployees(
             @ModelAttribute EmployeeSearchRequest request) {
-        // 1. Kiểm tra tham số đầu vào (thứ tự quyết định mã lỗi ER trả về trước tiên)
-        employeeValidator.validateSortOrder(request.getOrdEmployeeName());
-        employeeValidator.validateSortOrder(request.getOrdCertificationName());
-        employeeValidator.validateSortOrder(request.getOrdEndDate());
-        String employeeName = employeeValidator.validateAndEscapeEmployeeName(request.getEmployeeName());
-        Long departmentId = employeeValidator.parseDepartmentId(request.getDepartmentId());
-        int offset = employeeValidator.validateAndParseOffset(request.getOffset());
-        int limit = employeeValidator.validateAndParseLimit(request.getLimit());
+        // 1. Kiểm tra tính hợp lệ dữ liệu đầu vào (trả về MessageDTO nếu có lỗi)
+        MessageDTO messageDto = employeeValidator.validateSearchEmployees(request);
+        if (messageDto != null) {
+            MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
+            ListEmployeeResponse errorResponse = new ListEmployeeResponse(Constants.CODE_ERROR, messageResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
 
-        // 2. Chuẩn hóa tham số sắp xếp (áp mặc định, không ném lỗi)
+        // 2. Chuẩn hóa và parse tham số an toàn sau khi đã qua bước kiểm tra
+        String employeeName = employeeValidator.escapeEmployeeName(request.getEmployeeName());
+        Long departmentId = employeeValidator.parseDepartmentId(request.getDepartmentId());
+        int offset = employeeValidator.parseOffset(request.getOffset());
+        int limit = employeeValidator.parseLimit(request.getLimit());
+
         String ordEmployeeName = SortOrder.fromValueOrDefault(request.getOrdEmployeeName()).getValue();
         String ordCertificationName = SortOrder.fromValueOrDefault(request.getOrdCertificationName()).getValue();
         String ordEndDate = SortOrder.fromValueOrDefault(request.getOrdEndDate()).getValue();

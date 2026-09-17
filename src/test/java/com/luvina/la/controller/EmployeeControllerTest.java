@@ -135,6 +135,43 @@ class EmployeeControllerTest {
     }
 
     /**
+     * Kiểm tra khi hướng sắp xếp không hợp lệ thì getEmployees trả về HTTP 500 và mã ER021.
+     */
+    @Test
+    void shouldReturn500WhenGetEmployeesValidationFailsInvalidSortOrder() {
+        EmployeeSearchRequest request = createRequest("INVALID", "ASC", "ASC");
+
+        ResponseEntity<ListEmployeeResponse> response = employeeController.getEmployees(request);
+
+        verify(employeeService, never()).getEmployees(
+                any(), any(), anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(Constants.CODE_ERROR, response.getBody().getCode());
+        assertNotNull(response.getBody().getMessage());
+        assertEquals(Constants.ER021, response.getBody().getMessage().getCode());
+    }
+
+    /**
+     * Kiểm tra khi tham số limit không hợp lệ thì getEmployees trả về HTTP 500 và mã ER018.
+     */
+    @Test
+    void shouldReturn500WhenGetEmployeesValidationFailsInvalidLimit() {
+        EmployeeSearchRequest request = createRequest("ASC", "ASC", "ASC");
+        request.setLimit("-1");
+
+        ResponseEntity<ListEmployeeResponse> response = employeeController.getEmployees(request);
+
+        verify(employeeService, never()).getEmployees(
+                any(), any(), anyString(), anyString(), anyString(), anyString(), anyInt(), anyInt());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(Constants.CODE_ERROR, response.getBody().getCode());
+        assertNotNull(response.getBody().getMessage());
+        assertEquals(Constants.ER018, response.getBody().getMessage().getCode());
+    }
+
+    /**
      * Tạo request chỉ khác nhau ở cấu hình hướng sắp xếp.
      *
      * @param employeeNameOrder Hướng sort tên nhân viên

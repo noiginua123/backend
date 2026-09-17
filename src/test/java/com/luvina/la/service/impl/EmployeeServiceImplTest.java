@@ -39,8 +39,8 @@ import com.luvina.la.validator.CommonValidator;
 /**
  * Kiểm thử service danh sách nhân viên: uỷ quyền truy vấn Repository và mapping DTO.
  *
- * <p>Việc kiểm tra và chuẩn hóa tham số đã chuyển sang tầng Controller nên được
- * kiểm thử ở {@code EmployeeControllerTest}.</p>
+ * Việc kiểm tra và chuẩn hóa tham số đã chuyển sang tầng Controller nên được
+ * kiểm thử ở EmployeeControllerTest.
  *
  * @author thanhvinh
  */

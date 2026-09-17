@@ -32,6 +32,9 @@ public class EmployeeMapper {
     /** Số lượng cột mong đợi trả về từ câu truy vấn chi tiết nhân viên (ADM003). */
     private static final int EXPECTED_DETAIL_COLUMN_COUNT = 14;
 
+    /** Vị trí cột bắt đầu chứa thông tin chứng chỉ trong chi tiết nhân viên (ADM003). */
+    private static final int CERTIFICATION_START_INDEX = 9;
+
     /**
      * Chuyển mảng cột kết quả truy vấn danh sách nhân viên thành EmployeeListDTO.
      *
@@ -49,22 +52,30 @@ public class EmployeeMapper {
             );
         }
 
+        // Sử dụng biến index++ để lấy tuần tự giá trị các cột theo đúng thứ tự SELECT (ADM002)
+        int index = 0;
         return new EmployeeListDTO(
-                toLong(row[0]),        // 0: employeeId
-                toStr(row[1]),         // 1: employeeName
-                toStr(row[2]),         // 2: employeeBirthDate (yyyy/MM/dd)
-                toStr(row[3]),         // 3: departmentName
-                toStr(row[4]),         // 4: employeeEmail
-                toStr(row[5]),         // 5: employeeTelephone
-                toStr(row[6]),         // 6: certificationName
-                toStr(row[7]),         // 7: endDate (yyyy/MM/dd)
-                toBigDecimal(row[8]),  // 8: score
-                toRole(row[9])         // 9: role
+                toLong(row[index++]),        // Cột 0: ID nhân viên
+                toStr(row[index++]),         // Cột 1: Họ tên nhân viên
+                toStr(row[index++]),         // Cột 2: Ngày sinh nhân viên (yyyy/MM/dd)
+                toStr(row[index++]),         // Cột 3: Tên phòng ban
+                toStr(row[index++]),         // Cột 4: Email nhân viên
+                toStr(row[index++]),         // Cột 5: Số điện thoại nhân viên
+                toStr(row[index++]),         // Cột 6: Tên chứng chỉ cao nhất
+                toStr(row[index++]),         // Cột 7: Ngày hết hạn chứng chỉ (yyyy/MM/dd)
+                toBigDecimal(row[index++]),  // Cột 8: Điểm số chứng chỉ
+                toRole(row[index++])         // Cột 9: Quyền hạn (1: admin, 0: user)
         );
     }
 
     /**
      * Chuyển danh sách dòng kết quả truy vấn chi tiết nhân viên thành EmployeeDetailDTO.
+     *
+     * Do câu truy vấn sử dụng LEFT JOIN giữa bảng nhân viên và bảng chứng chỉ:
+     * - Nếu nhân viên có N chứng chỉ, query trả về N dòng với thông tin nhân viên
+     *   (các cột 0 - 8) lặp lại ở mỗi dòng.
+     * - Nếu nhân viên không có chứng chỉ, query trả về 1 dòng và các cột chứng chỉ
+     *   (các cột 9 - 13) mang giá trị null.
      *
      * @param rows Danh sách các dòng kết quả từ câu truy vấn EmployeeRepository.findEmployeeDetail
      * @return DTO chi tiết nhân viên kèm danh sách chứng chỉ, hoặc null nếu danh sách rỗng
@@ -75,6 +86,7 @@ public class EmployeeMapper {
             return null;
         }
 
+        // Dòng đầu tiên luôn tồn tại và chứa đầy đủ thông tin cơ bản của nhân viên
         Object[] firstRow = rows.get(0);
         if (firstRow == null || firstRow.length < EXPECTED_DETAIL_COLUMN_COUNT) {
             throw new IllegalArgumentException(
@@ -82,30 +94,37 @@ public class EmployeeMapper {
             );
         }
 
-        Long employeeId = toLong(firstRow[0]);            // 0: employeeId
-        String employeeLoginId = toStr(firstRow[1]);      // 1: employeeLoginId
-        String employeeName = toStr(firstRow[2]);         // 2: employeeName
-        String employeeNameKana = toStr(firstRow[3]);     // 3: employeeNameKana
-        String employeeBirthDate = toStr(firstRow[4]);    // 4: employeeBirthDate (yyyy/MM/dd)
-        String employeeEmail = toStr(firstRow[5]);        // 5: employeeEmail
-        String employeeTelephone = toStr(firstRow[6]);    // 6: employeeTelephone
-        Long departmentId = toLong(firstRow[7]);          // 7: departmentId
-        String departmentName = toStr(firstRow[8]);       // 8: departmentName
+        // Trích xuất thông tin chung của nhân viên từ dòng đầu tiên (các cột 0 - 8)
+        // Dùng biến index++ để lấy tuần tự theo đúng thứ tự SELECT của ADM003
+        int index = 0;
+        Long employeeId = toLong(firstRow[index++]);            // Cột 0: ID nhân viên
+        String employeeLoginId = toStr(firstRow[index++]);      // Cột 1: Tên đăng nhập nhân viên
+        String employeeName = toStr(firstRow[index++]);         // Cột 2: Họ tên nhân viên
+        String employeeNameKana = toStr(firstRow[index++]);     // Cột 3: Họ tên theo Katakana
+        String employeeBirthDate = toStr(firstRow[index++]);    // Cột 4: Ngày sinh nhân viên (yyyy/MM/dd)
+        String employeeEmail = toStr(firstRow[index++]);        // Cột 5: Email nhân viên
+        String employeeTelephone = toStr(firstRow[index++]);    // Cột 6: Số điện thoại nhân viên
+        Long departmentId = toLong(firstRow[index++]);          // Cột 7: ID phòng ban
+        String departmentName = toStr(firstRow[index++]);       // Cột 8: Tên phòng ban
 
+        // Gom danh sách chứng chỉ của nhân viên từ tất cả các dòng kết quả (các cột 9 - 13)
         List<EmployeeCertificationDTO> employeeCertifications = new ArrayList<>();
         for (Object[] row : rows) {
-            // Cột 9 là certificationId, nếu null nghĩa là nhân viên không có chứng chỉ (do LEFT JOIN)
-            if (row != null && row.length >= EXPECTED_DETAIL_COLUMN_COUNT && row[9] != null) {
+            // Cột certificationId bắt đầu từ CERTIFICATION_START_INDEX = 9.
+            // Nếu certificationId khác null nghĩa là nhân viên có chứng chỉ ở dòng này (do LEFT JOIN)
+            if (row != null && row.length >= EXPECTED_DETAIL_COLUMN_COUNT && row[CERTIFICATION_START_INDEX] != null) {
+                int certIndex = CERTIFICATION_START_INDEX;
                 employeeCertifications.add(EmployeeCertificationDTO.builder()
-                        .certificationId(toLong(row[9]))       // 9: certificationId
-                        .certificationName(toStr(row[10]))     // 10: certificationName
-                        .startDate(toStr(row[11]))             // 11: startDate (yyyy/MM/dd)
-                        .endDate(toStr(row[12]))               // 12: endDate (yyyy/MM/dd)
-                        .score(toBigDecimal(row[13]))          // 13: score
+                        .certificationId(toLong(row[certIndex++]))       // Cột 9: ID chứng chỉ
+                        .certificationName(toStr(row[certIndex++]))     // Cột 10: Tên chứng chỉ
+                        .startDate(toStr(row[certIndex++]))             // Cột 11: Ngày cấp chứng chỉ (yyyy/MM/dd)
+                        .endDate(toStr(row[certIndex++]))               // Cột 12: Ngày hết hạn chứng chỉ (yyyy/MM/dd)
+                        .score(toBigDecimal(row[certIndex++]))          // Cột 13: Điểm số chứng chỉ
                         .build());
             }
         }
 
+        // Tạo và trả về DTO chi tiết nhân viên hoàn chỉnh
         return EmployeeDetailDTO.builder()
                 .employeeId(employeeId)
                 .employeeLoginId(employeeLoginId)

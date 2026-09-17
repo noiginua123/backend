@@ -22,9 +22,9 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 
 import com.luvina.la.constant.Constants;
 import com.luvina.la.dto.MessageDTO;
-import com.luvina.la.exception.AppException;
 import com.luvina.la.payload.request.CertificationRequest;
 import com.luvina.la.payload.request.EmployeeRequest;
+import com.luvina.la.payload.request.EmployeeSearchRequest;
 import com.luvina.la.repository.CertificationRepository;
 import com.luvina.la.repository.DepartmentRepository;
 import com.luvina.la.repository.EmployeeRepository;
@@ -70,19 +70,80 @@ class EmployeeValidatorTest {
     }
 
     /**
-     * Kiểm tra nhãn departmentId trong tham số lỗi được đọc từ message source.
+     * Kiểm tra nhãn departmentId trong tham số lỗi được đọc từ message source khi validate tìm kiếm thất bại.
      */
     @Test
     void shouldResolveFieldLabelFromProperties() {
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> employeeValidator.parseDepartmentId("invalid")
-        );
+        EmployeeSearchRequest request = new EmployeeSearchRequest();
+        request.setDepartmentId("invalid");
 
+        MessageDTO result = employeeValidator.validateSearchEmployees(request);
+
+        assertNotNull(result);
+        assertEquals(Constants.ER018, result.getCode());
         assertEquals(
                 messageSource.getMessage("field.departmentId", null, Locale.getDefault()),
-                exception.getParams().get(0)
+                result.getParams().get(0)
         );
+    }
+
+    /**
+     * Kiểm tra khi hướng sắp xếp không hợp lệ thì validateSearchEmployees trả về ER021.
+     */
+    @Test
+    void shouldReturnER021WhenInvalidSortOrder() {
+        EmployeeSearchRequest request = new EmployeeSearchRequest();
+        request.setOrdEmployeeName("INVALID");
+
+        MessageDTO result = employeeValidator.validateSearchEmployees(request);
+
+        assertNotNull(result);
+        assertEquals(Constants.ER021, result.getCode());
+    }
+
+    /**
+     * Kiểm tra khi độ dài tên nhân viên vượt quá 125 ký tự thì validateSearchEmployees trả về ER006.
+     */
+    @Test
+    void shouldReturnER006WhenEmployeeNameExceedsMaxLength() {
+        EmployeeSearchRequest request = new EmployeeSearchRequest();
+        request.setEmployeeName("a".repeat(126));
+
+        MessageDTO result = employeeValidator.validateSearchEmployees(request);
+
+        assertNotNull(result);
+        assertEquals(Constants.ER006, result.getCode());
+    }
+
+    /**
+     * Kiểm tra khi limit <= 0 hoặc không phải số thì validateSearchEmployees trả về ER018.
+     */
+    @Test
+    void shouldReturnER018WhenInvalidLimit() {
+        EmployeeSearchRequest request = new EmployeeSearchRequest();
+        request.setLimit("0");
+
+        MessageDTO result = employeeValidator.validateSearchEmployees(request);
+
+        assertNotNull(result);
+        assertEquals(Constants.ER018, result.getCode());
+    }
+
+    /**
+     * Kiểm tra khi tham số tìm kiếm hợp lệ thì validateSearchEmployees trả về null.
+     */
+    @Test
+    void shouldReturnNullWhenSearchRequestIsValid() {
+        EmployeeSearchRequest request = new EmployeeSearchRequest();
+        request.setEmployeeName("Nguyen Van A");
+        request.setDepartmentId("1");
+        request.setOrdEmployeeName("ASC");
+        request.setLimit("20");
+        request.setOffset("0");
+
+        MessageDTO result = employeeValidator.validateSearchEmployees(request);
+
+        assertNull(result);
     }
 
     /**
