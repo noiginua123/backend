@@ -648,7 +648,7 @@ public class EmployeeValidator {
      * @param employeeId ID của nhân viên cần lấy chi tiết
      * @return MessageDTO chứa thông tin lỗi nếu không hợp lệ, hoặc null nếu hợp lệ
      */
-    public MessageDTO validateGetEmployeeDetail(Long employeeId) {
+    public MessageDTO validateEmployeeDetail(Long employeeId) {
         String idLabel = getLabel(Constants.FIELD_ID);
         if (employeeId == null) {
             return buildMessage(Constants.ER001, idLabel);

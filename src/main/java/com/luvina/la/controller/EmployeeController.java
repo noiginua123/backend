@@ -186,7 +186,7 @@ public class EmployeeController {
     public ResponseEntity<EmployeeDetailResponse> getEmployeeDetail(
             @PathVariable("employeeId") Long employeeId) {
         // 1. Kiểm tra tính hợp lệ của employeeId (bắt buộc, phải tồn tại và không phải admin)
-        MessageDTO messageDto = employeeValidator.validateGetEmployeeDetail(employeeId);
+        MessageDTO messageDto = employeeValidator.validateEmployeeDetail(employeeId);
         if (messageDto != null) {
             MessageResponse messageResponse = new MessageResponse(messageDto.getCode(), messageDto.getParams());
             EmployeeDetailResponse errorResponse = new EmployeeDetailResponse(Constants.CODE_ERROR, messageResponse);
